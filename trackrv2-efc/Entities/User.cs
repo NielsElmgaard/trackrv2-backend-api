@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using trackrv2_shared;
 
 namespace trackrv2_efc.Entities;
 
@@ -26,8 +27,11 @@ public class User : BaseEntity
 
     public required long PhoneNumber { get; set; }
 
+    public Role Role { get; set; } = Role.Regular;
+
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
 
-    public List<Tracker> Trackers {get;set;} = new();
+    public List<Tracker> Trackers { get; set; } = new();
 }
+
