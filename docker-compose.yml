@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  web-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: "trackrv2-web-api"
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - JwtConfig__Key=${JWT_SECRET_KEY}
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=trackrv2_db;Username=postgres;Password=${DB_PASSWORD}
+    networks:
+      - app-network
+
+  db:
+    image: postgres:17-alpine
+    container_name: postgres_trackrv2_db
+    ports:
+      - "5439:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: trackrv2_db
+    volumes:
+      - postgres_trackrv2_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trackrv2_db"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_trackrv2_data:

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="trackrv2-efc/trackrv2-efc.csproj" />
+  <Project Path="trackrv2-web-api/trackrv2-web-api.csproj" />
+</Solution>
