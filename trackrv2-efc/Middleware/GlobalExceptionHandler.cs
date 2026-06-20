@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
-namespace BadmintonKiosken.Core.Middleware;
+namespace trackrv2_efc.Middleware;
 
 public sealed class GlobalExceptionHandler(
     IProblemDetailsService problemDetailsService,
