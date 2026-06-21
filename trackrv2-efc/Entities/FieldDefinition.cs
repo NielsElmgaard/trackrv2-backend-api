@@ -1,4 +1,6 @@
-﻿namespace trackrv2_efc.Entities;
+﻿using trackrv2_shared;
+
+namespace trackrv2_efc.Entities;
 
 public class FieldDefinition : BaseEntity
 {

@@ -1,4 +1,4 @@
-﻿namespace trackrv2_efc.Entities;
+﻿namespace trackrv2_shared;
 
 public enum FieldType
 {

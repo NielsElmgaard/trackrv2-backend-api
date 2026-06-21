@@ -9,6 +9,6 @@ public record UserProfileResponse(
     string? Nationality,
     Role Role,
     DateTime CreatedAt,
-    DateTime LastUpdated
-
+    DateTime LastUpdated,
+    IEnumerable<TrackerOverviewResponse> SavedTrackers
 );

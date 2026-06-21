@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using trackrv2_efc;
 using trackrv2_shared;
+using trackrv2_shared.DTOs;
 using trackrv2_shared.DTOs.User;
 
 namespace trackrv2_web_api.Services.User;
@@ -61,11 +62,11 @@ public class UserService : IUserService
 
 
         return new UserProfileResponse(addedUserEntity.Id,
-            addedUserEntity.Username, fullName, user.Email,
+            addedUserEntity.Username, fullName, addedUserEntity.Email,
             addedUserEntity.PhoneNumber,
-            user.Nationality,
+            addedUserEntity.Nationality,
             addedUserEntity.Role, addedUserEntity.CreatedAt,
-            addedUserEntity.LastUpdated);
+            addedUserEntity.LastUpdated, new List<TrackerOverviewResponse>());
     }
 
     // Basic User Info update
@@ -221,7 +222,8 @@ public class UserService : IUserService
                 user.Nationality,
                 user.Role,
                  user.CreatedAt,
-                user.LastUpdated);
+                user.LastUpdated,
+                user.Trackers.Select(t => new TrackerOverviewResponse(t.Id, t.Name, t.CreatedAt, t.LastUpdated)));
         }))!;
     }
 
@@ -271,7 +273,7 @@ public class UserService : IUserService
             user.Nationality,
             user.Role,
            user.CreatedAt,
-            user.LastUpdated);
+            user.LastUpdated, user.Trackers.Select(t => new TrackerOverviewResponse(t.Id, t.Name, t.CreatedAt, t.LastUpdated)));
     }
 
     public async Task<List<UserOverviewResponse>> GetUsers(Guid? id,
