@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using trackrv2_shared.DTOs.Auth;
+using trackrv2_web_api.Services.Auth;
 
 namespace trackrv2_web_api.Controllers.Auth;
 

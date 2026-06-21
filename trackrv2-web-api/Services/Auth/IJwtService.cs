@@ -1,4 +1,6 @@
 ﻿
+using trackrv2_shared.DTOs.Auth;
+
 namespace trackrv2_web_api.Services.Auth;
 
 public interface IJwtService

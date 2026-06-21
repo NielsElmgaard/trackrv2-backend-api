@@ -1,6 +1,6 @@
-﻿
+﻿using trackrv2_shared.DTOs.Auth;
 
-namespace BadmintonKiosken.Api.Services.Auth;
+namespace trackrv2_web_api.Services.Auth;
 
 public interface ILoginService
 {

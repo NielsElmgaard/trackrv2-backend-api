@@ -7,25 +7,24 @@ using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames =
     Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 using System.Net;
-using trackrv2_web_api.Services.Auth;
 using trackrv2_efc;
-using trackrv2_efc.Entities;
 using trackrv2_shared.DTOs.Auth;
+using System.IdentityModel.Tokens.Jwt;
 
 
-namespace BadmintonKiosken.Api.Services.Auth;
+namespace trackrv2_web_api.Services.Auth;
 
 public class JwtService : IJwtService
 {
     private readonly IConfiguration _configuration;
 
-    private readonly IPasswordHasher<User>
+    private readonly IPasswordHasher<trackrv2_efc.Entities.User>
         _passwordHasher;
 
     private readonly TrackrContext _ctx;
 
     public JwtService(TrackrContext ctx,
-        IPasswordHasher<User> passwordHasher,
+        IPasswordHasher<trackrv2_efc.Entities.User> passwordHasher,
         IConfiguration configuration)
     {
         _ctx = ctx;
@@ -63,7 +62,7 @@ public class JwtService : IJwtService
                 "Ugyldigt brugernavn eller adgangskode"); // Wrong password
         }
 
-        var accessToken = CreateAccessToken(request.Username, user.LoyaltyGroup.ToString(), out DateTime expiryTime);
+        var accessToken = CreateAccessToken(request.Username, user.Role.ToString(), out DateTime expiryTime);
         var refreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"); // letters and numbers only
 
         user.RefreshToken = refreshToken;
@@ -71,7 +70,7 @@ public class JwtService : IJwtService
             DateTime.UtcNow
                 .AddDays(
                     7); // if no activity from customer in 7 days, logs the user out
-        _ctx.Customers.Update(user);
+        _ctx.Users.Update(user);
         await _ctx.SaveChangesAsync();
 
 
@@ -91,28 +90,28 @@ public class JwtService : IJwtService
         var decodedToken = WebUtility.UrlDecode(tokenFromCookie);
 
         // Find customer based on refresh token
-        var customer =
-            await _ctx.Customers.FirstOrDefaultAsync(u =>
+        var user =
+            await _ctx.Users.FirstOrDefaultAsync(u =>
                 u.RefreshToken == decodedToken);
 
-        if (customer == null || customer.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
         {
             throw new SecurityTokenException(
                 "Ugyldigt eller udløbet refresh token");
         }
 
-        var accessToken = CreateAccessToken(customer.Username, customer.LoyaltyGroup.ToString(), out DateTime expiryTime);
+        var accessToken = CreateAccessToken(user.Username, user.Role.ToString(), out DateTime expiryTime);
 
         var newRefreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"); // Make a new token
 
-        customer.RefreshToken = newRefreshToken;
-        customer.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Reset the 7 days inactivity
-        _ctx.Customers.Update(customer);
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); // Reset the 7 days inactivity
+        _ctx.Users.Update(user);
         await _ctx.SaveChangesAsync();
 
         var loginResponse = new LoginResponse
         (
-            customer.Username,
+            user.Username,
             newRefreshToken,
             (int)expiryTime.Subtract(DateTime.UtcNow).TotalSeconds
         );

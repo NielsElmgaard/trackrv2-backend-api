@@ -1,19 +1,18 @@
 ﻿using System.Net;
-using BadmintonKiosken.Core;
-using BadmintonKiosken.Shared.DTOs.Auth;
 using Microsoft.EntityFrameworkCore;
-using trackrv2_web_api.Services.Auth;
+using trackrv2_efc;
+using trackrv2_shared.DTOs.Auth;
 
-namespace BadmintonKiosken.Api.Services.Auth;
+namespace trackrv2_web_api.Services.Auth;
 
 public class LoginService : ILoginService
 {
     private readonly ILogger<LoginService> _logger;
     private readonly IJwtService _jwtService;
-    private readonly BadmintonKioskenContext _ctx;
+    private readonly TrackrContext _ctx;
 
     public LoginService(ILogger<LoginService> logger, IJwtService jwtService,
-        BadmintonKioskenContext ctx)
+        TrackrContext ctx)
     {
         _logger = logger;
         _jwtService = jwtService;
@@ -40,19 +39,19 @@ public class LoginService : ILoginService
 
         var decodedToken = WebUtility.UrlDecode(refreshTokenFromCookie);
 
-        var customer =
-            await _ctx.Customers.FirstOrDefaultAsync(u =>
+        var user =
+            await _ctx.Users.FirstOrDefaultAsync(u =>
                 u.RefreshToken == decodedToken);
-        if (customer != null)
+        if (user != null)
         {
             _logger.LogInformation(
                 "Invaliderer refresh token session for bruger: {Username}",
-                customer.Username);
+                user.Username);
 
-            customer.RefreshToken = null;
-            customer.RefreshTokenExpiryTime = null;
+            user.RefreshToken = null;
+            user.RefreshTokenExpiryTime = null;
 
-            _ctx.Customers.Update(customer);
+            _ctx.Users.Update(user);
             await _ctx.SaveChangesAsync();
         }
     }
