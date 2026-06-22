@@ -4,8 +4,8 @@ namespace trackrv2_web_api.Services.TrackerEntryService;
 
 public interface ITrackerEntryService
 {
-    Task CreateEntryAsync(Guid trackerId, TrackerEntryRequest trackerEntryRequest);
-    Task<List<TrackerEntryResponse>> GetEntriesForTrackerAsync(Guid trackerId, DateTime? fromCreatedAtDate, DateTime? toCreatedAtDate);
-    Task DeleteEntryAsync(Guid entryId);
-    Task UpdateEntryAsync(Guid entryId, TrackerEntryRequest request);
+    Task<TrackerEntryResponse> CreateTrackerEntryAsync(Guid trackerId,Guid userId, TrackerEntryRequest request);
+    Task<List<TrackerEntryResponse>> GetTrackerEntriesForTrackerAsync(Guid trackerId,Guid userId, DateTime? fromCreatedAtDate, DateTime? toCreatedAtDate);
+    Task DeleteTrackerEntryAsync(Guid trackerEntryId,Guid userId);
+    Task UpdateTrackerEntryAsync(Guid trackerEntryId, Guid userId,TrackerEntryRequest request);
 }

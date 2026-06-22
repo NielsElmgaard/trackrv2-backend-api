@@ -8,6 +8,7 @@ namespace trackrv2_web_api.Controllers.User;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[Authorize]
 public class UsersController(IUserService userService)
     : ControllerBase
 {
@@ -22,7 +23,6 @@ public class UsersController(IUserService userService)
             result);
     }
 
-    [Authorize]
     [HttpGet("{id:Guid}")]
     public async Task<ActionResult<UserProfileResponse>>
         GetUserById(Guid id)
@@ -32,7 +32,7 @@ public class UsersController(IUserService userService)
         return Ok(result);
     }
 
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpGet("search")]
     public async Task<ActionResult<UserProfileResponse>> GetSearchUser(
         [FromQuery] SingleUserSearchRequest searchRequest)
@@ -50,7 +50,7 @@ public class UsersController(IUserService userService)
         return Ok(user);
     }
 
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpGet]
     public async Task<ActionResult<List<UserOverviewResponse>>>
         GetUsers(

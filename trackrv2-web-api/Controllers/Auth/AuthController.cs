@@ -7,6 +7,7 @@ namespace trackrv2_web_api.Controllers.Auth;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[Authorize]
 public class AuthController : ControllerBase
 {
     private readonly ILoginService _loginService;
