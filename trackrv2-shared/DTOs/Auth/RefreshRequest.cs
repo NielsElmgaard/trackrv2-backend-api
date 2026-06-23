@@ -1,3 +1,3 @@
 ﻿namespace trackrv2_shared.DTOs.Auth;
 
-public record RefreshRequest(string Username, string RefreshToken);
+public record RefreshRequest(string Username, string RefreshToken, Role? SelectedRole = null);

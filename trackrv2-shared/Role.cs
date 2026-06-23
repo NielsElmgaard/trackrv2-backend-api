@@ -2,5 +2,5 @@ namespace trackrv2_shared;
 
 public enum Role
 {
-    User, Admin
+    None, User, Admin
 }

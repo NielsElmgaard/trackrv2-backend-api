@@ -27,7 +27,7 @@ public class User : BaseEntity
 
     public required long PhoneNumber { get; set; }
 
-    public Role Role { get; set; } = Role.User;
+    public Role Roles { get; set; } = Role.User;
 
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using trackrv2_shared.DTOs.Auth;
 using trackrv2_web_api.Services.Auth;
@@ -51,23 +52,39 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Loggede ud succesfuldt" });
     }
 
-[AllowAnonymous]
-[HttpPost("refresh")]
-public async Task<ActionResult<LoginResponse>> Refresh()
-{
-    var refreshToken = Request.Cookies["X-Refresh-Token"];
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<ActionResult<LoginResponse>> Refresh([FromBody] RefreshRequest request)
+    {
+        var refreshToken = Request.Cookies["X-Refresh-Token"];
 
-    if (string.IsNullOrEmpty(refreshToken))
-        return Unauthorized("Mangler refresh token");
+        if (string.IsNullOrEmpty(refreshToken))
+            return Unauthorized("Mangler refresh token");
 
-    var result = await _jwtService.RefreshToken(refreshToken);
+        var result = await _jwtService.RefreshToken(request);
 
-    setRefreshTokenCookie(result!.Value.Response.RefreshToken);
-    Response.Headers.Append("Authorization", $"Bearer {result!.Value.Token}");
-    Response.Headers.Append("Access-Control-Expose-Headers", "Authorization");
+        setRefreshTokenCookie(result!.Value.Response.RefreshToken);
+        Response.Headers.Append("Authorization", $"Bearer {result!.Value.Token}");
+        Response.Headers.Append("Access-Control-Expose-Headers", "Authorization");
 
-    return Ok(new { username = result.Value.Response.Username });
-}
+        return Ok(new { username = result.Value.Response.Username });
+    }
+    [HttpPost("switch-role")]
+    public async Task<IActionResult> SwitchRoleAsync([FromBody] SwitchRoleRequest request)
+    {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userId = Guid.Parse(userIdStr);
+        var result = await _jwtService.SwitchRole(userId, request);
+
+        if (result == null)
+        {
+            return Forbid($"Bruger med id'et {userId} har ikke rettigheder");
+        }
+        setRefreshTokenCookie(result.Value.Response.RefreshToken);
+        Response.Headers.Append("Authorization", $"Bearer {result!.Value.Token}");
+        Response.Headers.Append("Access-Control-Expose-Headers", "Authorization");
+        return Ok(new { username = result.Value.Response.Username, activeRole = result.Value.Response.ActiveRole });
+    }
 
     private void setRefreshTokenCookie(string refreshToken)
     {

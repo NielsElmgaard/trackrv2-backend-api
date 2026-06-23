@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using trackrv2_shared;
 using trackrv2_shared.DTOs.User;
@@ -13,7 +14,7 @@ public class UsersController(IUserService userService)
     : ControllerBase
 {
     [AllowAnonymous]
-    [HttpPost("register")]
+    [HttpPost]
     public async Task<ActionResult<UserProfileResponse>> RegisterUser(
         UserRequest request)
     {
@@ -68,5 +69,28 @@ public class UsersController(IUserService userService)
             email, phoneNumber, nationality, role, createdAt,
             lastUpdated);
         return Ok(users);
+    }
+
+    [Authorize(Policy = "AdminOnly")]
+
+    [HttpDelete("force-delete/{userId:Guid}")]
+    public async Task<ActionResult> ForceDeleteUser(
+        Guid userId)
+    {
+        await userService.DeleteUserAsync(userId);
+
+        return NoContent();
+    }
+
+    [Authorize(Policy = "UserOnly")]
+
+    [HttpDelete("{id:Guid}")]
+    public async Task<ActionResult> DeleteUser()
+    {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        await userService.DeleteUserAsync(Guid.Parse(userIdStr));
+
+        return NoContent();
     }
 }

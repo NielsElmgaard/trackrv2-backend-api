@@ -50,7 +50,8 @@ public class UserService : IUserService
             FirstName = userRequest.FirstName,
             MiddleName = userRequest.MiddleName,
             LastName = userRequest.LastName,
-            PhoneNumber = userRequest.PhoneNumber
+            PhoneNumber = userRequest.PhoneNumber,
+            Roles = Role.User
         };
         user.Password =
             _passwordHasher.HashPassword(user, userRequest.Password);
@@ -65,7 +66,7 @@ public class UserService : IUserService
             addedUserEntity.Username, fullName, addedUserEntity.Email,
             addedUserEntity.PhoneNumber,
             addedUserEntity.Nationality,
-            addedUserEntity.Role, addedUserEntity.CreatedAt,
+            addedUserEntity.Roles, addedUserEntity.CreatedAt,
             addedUserEntity.LastUpdated, new List<TrackerOverviewResponse>());
     }
 
@@ -177,7 +178,7 @@ public class UserService : IUserService
     }
 
     public async Task UpdateUserRoleAsync(Guid id,
-        Role newRole)
+        Role newRoles)
     {
         var user = await _ctx.Users
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -187,7 +188,7 @@ public class UserService : IUserService
                 $"En bruger med id'et: '{id}' kunne ikke findes.");
         }
 
-        user.Role = newRole;
+        user.Roles = newRoles;
 
         await _ctx.SaveChangesAsync();
 
@@ -220,7 +221,7 @@ public class UserService : IUserService
                 user.Username, fullName, user.Email,
                 user.PhoneNumber,
                 user.Nationality,
-                user.Role,
+                user.Roles,
                  user.CreatedAt,
                 user.LastUpdated,
                 user.Trackers.Select(t => new TrackerOverviewResponse(t.Id, t.Name, t.CreatedAt, t.LastUpdated)));
@@ -271,7 +272,7 @@ public class UserService : IUserService
             user.Username, fullName, user.Email,
             user.PhoneNumber,
             user.Nationality,
-            user.Role,
+            user.Roles,
            user.CreatedAt,
             user.LastUpdated, user.Trackers.Select(t => new TrackerOverviewResponse(t.Id, t.Name, t.CreatedAt, t.LastUpdated)));
     }
@@ -295,7 +296,7 @@ public class UserService : IUserService
                 user.Username, userFullName, user.Email,
                 user.PhoneNumber,
                 user.Nationality,
-                user.Role,
+                user.Roles,
                 user.CreatedAt,
                 user.LastUpdated
             );
@@ -325,10 +326,9 @@ public class UserService : IUserService
         if (!string.IsNullOrWhiteSpace(fullName))
         {
             query = query.Where(u =>
-                u.MiddleName != null &&
-                (EF.Functions.ILike(u.FirstName, fullName) ||
-                 EF.Functions.ILike(u.MiddleName, fullName) ||
-                 EF.Functions.ILike(u.LastName, fullName)));
+                EF.Functions.ILike(u.FirstName, fullName) ||
+                (u.MiddleName != null && EF.Functions.ILike(u.MiddleName, fullName)) ||
+                EF.Functions.ILike(u.LastName, fullName));
         }
 
         if (!string.IsNullOrWhiteSpace(email))
@@ -353,7 +353,7 @@ public class UserService : IUserService
 
         if (role.HasValue)
         {
-            query = query.Where(u => u.Role == role.Value);
+            query = query.Where(u => (u.Roles & role.Value) == role.Value);
         }
 
         if (createdAt.HasValue)

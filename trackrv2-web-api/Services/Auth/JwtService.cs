@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames =
     Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
-using System.Net;
 using trackrv2_efc;
 using trackrv2_shared.DTOs.Auth;
 using System.IdentityModel.Tokens.Jwt;
+using trackrv2_shared;
 
 
 namespace trackrv2_web_api.Services.Auth;
@@ -62,7 +62,12 @@ public class JwtService : IJwtService
                 "Ugyldigt brugernavn eller adgangskode"); // Wrong password
         }
 
-        var accessToken = CreateAccessToken(request.Username, user.Role.ToString(), out DateTime expiryTime);
+        if (request.SelectedRole.HasValue && !user.Roles.HasFlag(request.SelectedRole.Value))
+        {
+            throw new UnauthorizedAccessException($"{user.Username} har ikke rettigheder til den valgte rolle.");
+        }
+
+        var accessToken = CreateAccessTokenWithSpecificRole(user, request.SelectedRole, out DateTime expiryTime, out string activeRoleString);
         var refreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"); // letters and numbers only
 
         user.RefreshToken = refreshToken;
@@ -78,21 +83,19 @@ public class JwtService : IJwtService
         (
             request.Username,
             refreshToken,
-            (int)expiryTime.Subtract(DateTime.UtcNow).TotalSeconds
+            (int)expiryTime.Subtract(DateTime.UtcNow).TotalSeconds,
+            activeRoleString
         );
 
         return (accessToken, loginResponse);
     }
 
     public async Task<(string Token, LoginResponse Response)?> RefreshToken(
-        string tokenFromCookie)
+        RefreshRequest request)
     {
-        var decodedToken = WebUtility.UrlDecode(tokenFromCookie);
-
-        // Find customer based on refresh token
-        var user =
-            await _ctx.Users.FirstOrDefaultAsync(u =>
-                u.RefreshToken == decodedToken);
+        // Find user based on refresh token
+        var user = await _ctx.Users.FirstOrDefaultAsync(u => 
+            u.Username == request.Username && u.RefreshToken == request.RefreshToken);
 
         if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
         {
@@ -100,7 +103,7 @@ public class JwtService : IJwtService
                 "Ugyldigt eller udløbet refresh token");
         }
 
-        var accessToken = CreateAccessToken(user.Username, user.Role.ToString(), out DateTime expiryTime);
+        var accessToken = CreateAccessTokenWithSpecificRole(user, request.SelectedRole, out DateTime expiryTime, out string activeRoleString);
 
         var newRefreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"); // Make a new token
 
@@ -113,13 +116,46 @@ public class JwtService : IJwtService
         (
             user.Username,
             newRefreshToken,
-            (int)expiryTime.Subtract(DateTime.UtcNow).TotalSeconds
+            (int)expiryTime.Subtract(DateTime.UtcNow).TotalSeconds,
+            activeRoleString
         );
 
         return (accessToken, loginResponse);
     }
 
-    // Helper method to make secure random string for refresh token
+    public async Task<(string Token, LoginResponse Response)?> SwitchRole(Guid userId, SwitchRoleRequest request)
+{
+    var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
+    
+    if (user == null) return null;
+
+    // Does the user has the role
+    if (request.TargetRole != Role.None && !user.Roles.HasFlag(request.TargetRole))
+    {
+        return null;
+    }
+
+    var accessToken = CreateAccessTokenWithSpecificRole(user, request.TargetRole, out DateTime expiryTime, out string activeRoleString);
+    var newRefreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+
+    user.RefreshToken = newRefreshToken;
+    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+    
+    _ctx.Users.Update(user);
+    await _ctx.SaveChangesAsync();
+
+    var loginResponse = new LoginResponse
+    (
+        user.Username,
+        newRefreshToken,
+        (int)expiryTime.Subtract(DateTime.UtcNow).TotalSeconds,
+        activeRoleString
+    );
+
+    return (accessToken, loginResponse);
+}
+
+    // Redacted. Helper method to make secure random string for refresh token
     private string GenerateRefreshTokenString()
     {
         var randomNumber = new byte[64];
@@ -129,7 +165,7 @@ public class JwtService : IJwtService
     }
 
 
-    private string CreateAccessToken(string username, string role, out DateTime expiryTime)
+    private string CreateAccessTokenWithSpecificRole(trackrv2_efc.Entities.User user, Role? selectedRole, out DateTime expiryTime, out string activeRoleString)
     {
         var issuer = _configuration["JwtConfig:Issuer"];
         var audience = _configuration["JwtConfig:Audience"];
@@ -138,13 +174,38 @@ public class JwtService : IJwtService
 
         expiryTime = DateTime.UtcNow.AddMinutes(tokenValidityMins);
 
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Name, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+        };
+
+        // Specific Role
+        if (selectedRole.HasValue && selectedRole.Value != Role.None)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, selectedRole.Value.ToString()));
+            activeRoleString = selectedRole.Value.ToString();
+        }
+        else
+        {
+            // All roles (seletedRole is null)
+            var activeRolesList = new List<string>();
+            foreach (Role role in Enum.GetValues(typeof(Role)))
+            {
+                if (role != Role.None && user.Roles.HasFlag(role))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+                    activeRolesList.Add(role.ToString());
+                }
+            }
+
+            // Roles combined
+            activeRoleString = string.Join(", ", activeRolesList);
+        }
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-            new Claim(JwtRegisteredClaimNames.Name, username),
-            new Claim(ClaimTypes.Role, role)
-        }),
+            Subject = new ClaimsIdentity(claims),
             Expires = expiryTime,
             Issuer = issuer,
             Audience = audience,
