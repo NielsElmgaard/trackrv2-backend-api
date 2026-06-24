@@ -191,15 +191,20 @@ try
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
-        app.UseSwagger();
-        app.MapOpenApi();
-        app.UseSwaggerUI();
+        // app.UseHttpsRedirection(); // Uncomment in local production
+
     }
+
+    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/openapi/v1.json", "TrackrV2 API v1");
+        c.RoutePrefix = "swagger";
+    });
 
     app.UseExceptionHandler();
     app.UseCors("ReactApp");
-
-    // app.UseHttpsRedirection(); // Uncomment in production
 
     app.UseAuthentication();
     app.UseAuthorization();
