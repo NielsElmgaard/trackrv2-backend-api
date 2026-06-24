@@ -195,7 +195,7 @@ try
 
     }
 
-    app.MapOpenApi();
+    //app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
