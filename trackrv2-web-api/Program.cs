@@ -72,13 +72,13 @@ try
     {
         // Inside Docker container network
         connectionString =
-            $"Host=db;Port=5432;Database=badminton_kiosken_db;Username=postgres;Password={dbPassword};";
+            $"Host=db;Port=5432;Database=trackrv2_db;Username=postgres;Password={dbPassword};";
     }
     else
     {
         // Running locally via IDE or Terminal on Windows
         connectionString =
-            $"Host=127.0.0.1;Port=5432;Database=badminton_kiosken_db;Username=postgres;Password={dbPassword};";
+            $"Host=127.0.0.1;Port=5432;Database=trackrv2_db;Username=postgres;Password={dbPassword};";
     }
 
     // EFC

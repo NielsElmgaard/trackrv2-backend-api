@@ -94,7 +94,7 @@ public class JwtService : IJwtService
         RefreshRequest request)
     {
         // Find user based on refresh token
-        var user = await _ctx.Users.FirstOrDefaultAsync(u => 
+        var user = await _ctx.Users.FirstOrDefaultAsync(u =>
             u.Username == request.Username && u.RefreshToken == request.RefreshToken);
 
         if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
@@ -124,36 +124,39 @@ public class JwtService : IJwtService
     }
 
     public async Task<(string Token, LoginResponse Response)?> SwitchRole(Guid userId, SwitchRoleRequest request)
-{
-    var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
-    
-    if (user == null) return null;
-
-    // Does the user has the role
-    if (request.TargetRole != Role.None && !user.Roles.HasFlag(request.TargetRole))
     {
-        return null;
+        var user = await _ctx.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null) return null;
+
+        // Does the user has the role
+        if (request.TargetRole != Role.None && !user.Roles.HasFlag(request.TargetRole))
+        {
+            return null;
+        }
+
+        // if true, it is a multi-role request => pass null to accessToken
+        bool isComposite = Enum.GetValues(typeof(Role)).Cast<Role>().Count(r => r != Role.None && request.TargetRole.HasFlag(r)) > 1;
+
+        var accessToken = CreateAccessTokenWithSpecificRole(user, isComposite ? null : request.TargetRole, out DateTime expiryTime, out string activeRoleString);
+        var newRefreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+        _ctx.Users.Update(user);
+        await _ctx.SaveChangesAsync();
+
+        var loginResponse = new LoginResponse
+        (
+            user.Username,
+            newRefreshToken,
+            (int)expiryTime.Subtract(DateTime.UtcNow).TotalSeconds,
+            activeRoleString
+        );
+
+        return (accessToken, loginResponse);
     }
-
-    var accessToken = CreateAccessTokenWithSpecificRole(user, request.TargetRole, out DateTime expiryTime, out string activeRoleString);
-    var newRefreshToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
-
-    user.RefreshToken = newRefreshToken;
-    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-    
-    _ctx.Users.Update(user);
-    await _ctx.SaveChangesAsync();
-
-    var loginResponse = new LoginResponse
-    (
-        user.Username,
-        newRefreshToken,
-        (int)expiryTime.Subtract(DateTime.UtcNow).TotalSeconds,
-        activeRoleString
-    );
-
-    return (accessToken, loginResponse);
-}
 
     // Redacted. Helper method to make secure random string for refresh token
     private string GenerateRefreshTokenString()

@@ -16,7 +16,7 @@ public interface IUserService
 
     Task UpdateUserPasswordAsync(Guid id, string newPassword);
 
-    Task UpdateUserRolesAsync(Guid id, Role newRoles);
+    Task UpdateUserRolesAsync(Guid id, UpdateUserRolesRequest request);
 
     // Admin role required
     Task<UserProfileResponse> GetUserByIdAsync(Guid id);

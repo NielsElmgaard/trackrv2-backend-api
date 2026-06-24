@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web-api:
@@ -15,7 +15,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - JwtConfig__Key=${JWT_SECRET_KEY}
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=trackrv2_db;Username=postgres;Password=${DB_PASSWORD}
+      - JwtConfig__Issuer=http://localhost:8080
+      - JwtConfig__Audience=http://localhost:8080
+      - DB_PASSWORD=${DB_PASSWORD}
     networks:
       - app-network
 
@@ -25,9 +27,9 @@ services:
     ports:
       - "5439:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: trackrv2_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=trackrv2_db
     volumes:
       - postgres_trackrv2_data:/var/lib/postgresql/data
     healthcheck:

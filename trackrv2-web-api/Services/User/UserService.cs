@@ -178,7 +178,7 @@ public class UserService : IUserService
     }
 
     public async Task UpdateUserRolesAsync(Guid id,
-        Role newRoles)
+        UpdateUserRolesRequest request)
     {
         var user = await _ctx.Users
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -188,7 +188,7 @@ public class UserService : IUserService
                 $"En bruger med id'et: '{id}' kunne ikke findes.");
         }
 
-        user.Roles = newRoles;
+        user.Roles = request.Roles;
 
         await _ctx.SaveChangesAsync();
 

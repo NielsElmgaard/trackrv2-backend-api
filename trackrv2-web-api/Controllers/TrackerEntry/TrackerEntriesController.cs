@@ -26,7 +26,7 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
     }
 
 
-    [HttpDelete("{trackerId:Guid}")]
+    [HttpDelete("{trackerEntryId:Guid}")]
     public async Task<ActionResult> DeleteTrackerEntryAsync([FromRoute] Guid trackerEntryId)
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;

@@ -8,5 +8,4 @@ public record UserRequest(
     string LastName,
     string? Nationality,
     string Email,
-    long PhoneNumber,
-    Role Role);
+    long PhoneNumber);
