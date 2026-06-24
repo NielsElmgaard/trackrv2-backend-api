@@ -62,23 +62,22 @@ try
 
     var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
-    // ONLY use the internal Docker routing if physically inside a container
-    var isDocker =
-        Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") ==
-        "true";
+    var supabaseDbPassword = Environment.GetEnvironmentVariable("SUPABASE_DB_PASSWORD");
 
-    string connectionString;
-    if (isDocker)
+    var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
+    if (string.IsNullOrEmpty(connectionString))
     {
-        // Inside Docker container network
-        connectionString =
-            $"Host=db;Port=5432;Database=trackrv2_db;Username=postgres;Password={dbPassword};";
-    }
-    else
-    {
-        // Running locally via IDE or Terminal on Windows
-        connectionString =
-            $"Host=127.0.0.1;Port=5432;Database=trackrv2_db;Username=postgres;Password={dbPassword};";
+        var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+        if (isDocker)
+        {
+            connectionString = $"Host=db;Port=5432;Database=trackrv2_db;Username=postgres;Password={dbPassword};";
+        }
+        else
+        {
+            // Din direkte forbindelse til lokal brug
+            connectionString = $"Host=aws-0-eu-west-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.fzqputdxlzlnvslgdmdj;Password={supabaseDbPassword};Pooling=true;";
+        }
     }
 
     // EFC
