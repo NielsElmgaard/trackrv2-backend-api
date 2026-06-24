@@ -56,12 +56,17 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<ActionResult<LoginResponse>> Refresh([FromBody] RefreshRequest request)
     {
-        var refreshToken = Request.Cookies["X-Refresh-Token"];
+        var cookieRefreshToken = Request.Cookies["X-Refresh-Token"];
 
-        if (string.IsNullOrEmpty(refreshToken))
-            return Unauthorized("Mangler refresh token");
+        if (string.IsNullOrEmpty(cookieRefreshToken))
+            return Unauthorized("Mangler refresh token i cookies");
 
-        var result = await _jwtService.RefreshToken(request);
+        var secureRequest = request with { RefreshToken = cookieRefreshToken };
+
+        var result = await _jwtService.RefreshToken(secureRequest);
+
+        if (result == null)
+            return Unauthorized("Ugyldigt eller udløbet refresh token");
 
         setRefreshTokenCookie(result!.Value.Response.RefreshToken);
         Response.Headers.Append("Authorization", $"Bearer {result!.Value.Token}");
