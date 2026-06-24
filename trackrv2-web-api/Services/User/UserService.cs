@@ -27,7 +27,7 @@ public class UserService : IUserService
         _cache = cache;
     }
 
-    public async Task<UserProfileResponse> RegisterUser(
+    public async Task<UserProfileResponse> RegisterUserAsync(
         UserRequest userRequest)
     {
         var existingUser = await
@@ -177,7 +177,7 @@ public class UserService : IUserService
         _cache.Remove(cacheKey);
     }
 
-    public async Task UpdateUserRoleAsync(Guid id,
+    public async Task UpdateUserRolesAsync(Guid id,
         Role newRoles)
     {
         var user = await _ctx.Users
@@ -196,7 +196,7 @@ public class UserService : IUserService
         _cache.Remove(cacheKey);
     }
 
-    public async Task<UserProfileResponse> GetUserById(Guid id)
+    public async Task<UserProfileResponse> GetUserByIdAsync(Guid id)
     {
         string cacheKey = $"{UserCachePrefix}{id}";
 
@@ -229,7 +229,7 @@ public class UserService : IUserService
     }
 
     // Search for everything unique about a user
-    public async Task<UserProfileResponse> GetSingleUserBySearch(
+    public async Task<UserProfileResponse> GetSingleUserBySearchAsync(
         SingleUserSearchRequest searchRequest)
     {
         trackrv2_efc.Entities.User? user = null;
@@ -277,7 +277,7 @@ public class UserService : IUserService
             user.LastUpdated, user.Trackers.Select(t => new TrackerOverviewResponse(t.Id, t.Name, t.CreatedAt, t.LastUpdated)));
     }
 
-    public async Task<List<UserOverviewResponse>> GetUsers(Guid? id,
+    public async Task<List<UserOverviewResponse>> GetUsersAsync(Guid? id,
         string? username,
         string? fullName, string? email, long? phoneNumber, string? nationality,
        Role? role, DateTime? createdAt,
