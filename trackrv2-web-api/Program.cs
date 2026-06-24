@@ -94,10 +94,15 @@ try
         });
     builder.Services.AddMemoryCache();
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-    builder.Services.AddOpenApi();
+    // builder.Services.AddOpenApi();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "TrackrV2 API",
+            Version = "v1"
+        });
         var jwtSecurityScheme = new OpenApiSecurityScheme
         {
             BearerFormat = "JWT",
@@ -108,14 +113,24 @@ try
             Description = "Enter your JWT Access Token",
             Reference = new OpenApiReference
             {
-                Id = JwtBearerDefaults.AuthenticationScheme,
+                Id = "Bearer",
                 Type = ReferenceType.SecurityScheme
             }
         };
         options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
         options.AddSecurityRequirement(new OpenApiSecurityRequirement
         {
-            { jwtSecurityScheme, Array.Empty<string>() }
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
         });
     });
 
