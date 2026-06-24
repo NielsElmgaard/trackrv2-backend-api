@@ -199,7 +199,7 @@ try
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/openapi/v1.json", "TrackrV2 API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TrackrV2 API v1");
         c.RoutePrefix = "swagger";
     });
 
