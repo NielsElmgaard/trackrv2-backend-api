@@ -27,7 +27,7 @@ public class UsersController(IUserService userService)
     [HttpPut]
     public async Task<ActionResult> UpdateUserAsync([FromBody] UserRequest request)
     {
-        var userIdStr = User.FindFirstValue("sub")!;
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var userId = Guid.Parse(userIdStr);
 
         await userService.UpdateUserAsync(userId, request);
@@ -51,7 +51,7 @@ public class UsersController(IUserService userService)
     [HttpDelete]
     public async Task<ActionResult> DeleteUserAsync()
     {
-        var userIdStr = User.FindFirstValue("sub")!;
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var userId = Guid.Parse(userIdStr);
 
         await userService.DeleteUserAsync(userId);
@@ -62,7 +62,7 @@ public class UsersController(IUserService userService)
     [HttpPut("password")]
     public async Task<ActionResult> UpdateUserPasswordAsync([FromBody] string newPassword) // secured with https
     {
-        var userIdStr = User.FindFirstValue("sub")!;
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var userId = Guid.Parse(userIdStr);
 
         await userService.UpdateUserPasswordAsync(userId, newPassword);
@@ -86,7 +86,7 @@ public class UsersController(IUserService userService)
     public async Task<ActionResult<UserProfileResponse>>
         GetSingleUserByIdAsync()
     {
-        var userIdStr = User.FindFirstValue("sub")!;
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var userId = Guid.Parse(userIdStr);
         var result = await userService.GetUserByIdAsync(userId);
 

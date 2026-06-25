@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -153,7 +152,6 @@ try
         .AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
     builder.Services.AddScoped<IJwtService, JwtService>();
 
-    JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme =
@@ -176,7 +174,7 @@ try
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             NameClaimType = "name",
-            RoleClaimType = "role"
+            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         };
     });
 

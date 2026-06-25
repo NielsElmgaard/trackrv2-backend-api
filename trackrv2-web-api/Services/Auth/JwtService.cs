@@ -178,7 +178,7 @@ public class JwtService : IJwtService
         var claims = new List<Claim>
         {
             new Claim("name", user.Username),
-            new Claim("sub", user.Id.ToString())
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
         // Specific Role
