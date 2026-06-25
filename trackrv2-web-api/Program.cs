@@ -51,7 +51,9 @@ try
     {
         options.AddPolicy("ReactApp", policy =>
         {
-            policy.WithOrigins("http://localhost:5173") // Vite dev server
+            policy.WithOrigins("http://localhost:5173"  // Vite dev server
+            ,"https://nielselmgaard.github.io/trackrv2-frontend" // github pages
+            )
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();

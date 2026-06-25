@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
         [FromBody] LoginRequest request)
     {
         var result = await _loginService.Login(request);
-        setRefreshTokenCookie(result!.Value.Response.RefreshToken);
+        SetRefreshTokenCookie(result!.Value.Response.RefreshToken);
         Response.Headers.Append("Authorization", $"Bearer {result!.Value.Token}");
         Response.Headers.Append("Access-Control-Expose-Headers", "Authorization");
 
@@ -68,7 +68,7 @@ public class AuthController : ControllerBase
         if (result == null)
             return Unauthorized("Ugyldigt eller udløbet refresh token");
 
-        setRefreshTokenCookie(result!.Value.Response.RefreshToken);
+        SetRefreshTokenCookie(result!.Value.Response.RefreshToken);
         Response.Headers.Append("Authorization", $"Bearer {result!.Value.Token}");
         Response.Headers.Append("Access-Control-Expose-Headers", "Authorization");
 
@@ -85,19 +85,19 @@ public class AuthController : ControllerBase
         {
             return Forbid($"Bruger med id'et {userId} har ikke rettigheder");
         }
-        setRefreshTokenCookie(result.Value.Response.RefreshToken);
+        SetRefreshTokenCookie(result.Value.Response.RefreshToken);
         Response.Headers.Append("Authorization", $"Bearer {result!.Value.Token}");
         Response.Headers.Append("Access-Control-Expose-Headers", "Authorization");
         return Ok(new { username = result.Value.Response.Username, activeRole = result.Value.Response.ActiveRole });
     }
 
-    private void setRefreshTokenCookie(string refreshToken)
+    private void SetRefreshTokenCookie(string refreshToken)
     {
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
             Secure = true, // TODO: Set to true when in production
-            SameSite = SameSiteMode.Lax,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(7),
             Path = "/"
         };
