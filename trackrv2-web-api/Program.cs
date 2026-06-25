@@ -188,7 +188,8 @@ try
     builder.Services.AddAuthorization(options =>
     {
         options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-        options.AddPolicy("UserOnly", policy => policy.RequireRole("User").RequireAssertion(context => !context.User.IsInRole("Admin")));
+
+        options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
     });
     var app = builder.Build();
 
