@@ -153,4 +153,61 @@ public class TrackerService : ITrackerService
         string userCacheKey = $"{UserCachePrefix}{userId}";
         _cache.Remove(userCacheKey);
     }
+
+    public async Task<List<TrackerOverviewResponse>> GetTrackersByUserAsync(Guid userId, string? name, DateTime? createdAt,
+    DateTime? lastUpdated)
+    {
+        var existingUser = await _ctx.Users
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (existingUser == null)
+        {
+            throw new KeyNotFoundException($"brugeren med id'et '{userId}' blev ikke fundet");
+        }
+        var trackers = await GetManyTrackers(name, createdAt, lastUpdated);
+
+        return trackers.Select(tracker =>
+         {
+             return new TrackerOverviewResponse(tracker.Id,
+                 tracker.Name,
+                 tracker.CreatedAt,
+                 tracker.LastUpdated
+             );
+         }).ToList();
+    }
+
+    private async Task<List<Tracker>> GetManyTrackers(
+        string? name,
+        DateTime? createdAt,
+        DateTime? lastUpdated)
+    {
+        var query = _ctx.Trackers.AsNoTracking().AsQueryable();
+
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            query = query.Where(t =>
+                EF.Functions.ILike(t.Name, name));
+        }
+
+        if (createdAt.HasValue)
+        {
+            DateTime startDate = createdAt.Value.Date;
+            DateTime endDate = startDate.AddDays(1);
+            query = query.Where(t =>
+                t.CreatedAt >= startDate && t.CreatedAt < endDate);
+        }
+
+        if (lastUpdated.HasValue)
+        {
+            DateTime startDate = lastUpdated.Value.Date;
+            DateTime endDate = startDate.AddDays(1);
+            query = query.Where(t =>
+                t.LastUpdated >= startDate && t.LastUpdated < endDate);
+        }
+
+
+        return await query.ToListAsync();
+    }
 }

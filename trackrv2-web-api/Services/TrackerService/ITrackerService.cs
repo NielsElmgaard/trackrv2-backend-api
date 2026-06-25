@@ -8,4 +8,6 @@ public interface ITrackerService
     Task<TrackerDetailedResponse> GetTrackerByIdAsync(Guid trackerId, Guid userId);
     Task DeleteTrackerAsync(Guid trackerId, Guid userId);
     Task UpdateTrackerNameAsync(Guid trackerId, Guid userId, string newName);
+    Task<List<TrackerOverviewResponse>> GetTrackersByUserAsync(Guid userId, string? name, DateTime? createdAt,
+    DateTime? lastUpdated);
 }

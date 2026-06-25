@@ -58,4 +58,18 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
 
         return NoContent();
     }
+
+
+    [HttpGet]
+    public async Task<ActionResult<TrackerOverviewResponse>>
+GetTrackersByUserAsync([FromQuery] string? name, [FromQuery] DateTime? createdAt,
+[FromQuery] DateTime? lastUpdated)
+    {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userId = Guid.Parse(userIdStr);
+
+        var result = await trackerService.GetTrackersByUserAsync(userId, name, createdAt, lastUpdated);
+
+        return Ok(result);
+    }
 }
