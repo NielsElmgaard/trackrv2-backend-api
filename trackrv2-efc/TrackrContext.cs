@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using trackrv2_efc.Entities;
 
 
 namespace trackrv2_efc;
 
-public class TrackrContext : DbContext
+public class TrackrContext : DbContext, IDataProtectionKeyContext
 {
 
     public TrackrContext(DbContextOptions<TrackrContext> options) : base(options)
@@ -17,6 +18,7 @@ public class TrackrContext : DbContext
 
     public DbSet<User> Users => Set<User>();
 
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Tracker>()

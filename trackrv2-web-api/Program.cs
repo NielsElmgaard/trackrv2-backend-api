@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -85,6 +86,9 @@ try
     // EFC
     builder.Services.AddDbContext<TrackrContext>(options =>
         options.UseNpgsql(connectionString));
+
+    builder.Services.AddDataProtection()
+        .PersistKeysToDbContext<TrackrContext>();
 
     // Add services to the container.
 
