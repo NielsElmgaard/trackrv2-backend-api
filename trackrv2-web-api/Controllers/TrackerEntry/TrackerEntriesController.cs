@@ -17,7 +17,7 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
         [FromRoute] Guid trackerId, [FromBody] TrackerEntryRequest request)
     {
 
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
         var result = await trackerEntryService.CreateTrackerEntryAsync(trackerId, userId, request);
 
@@ -29,7 +29,7 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
     [HttpDelete("{trackerEntryId:Guid}")]
     public async Task<ActionResult> DeleteTrackerEntryAsync([FromRoute] Guid trackerEntryId)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
 
         await trackerEntryService.DeleteTrackerEntryAsync(trackerEntryId, userId);
@@ -41,7 +41,7 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
     public async Task<ActionResult<TrackerDetailedResponse>>
     GetTrackerEntriesForTrackerAsync([FromRoute] Guid trackerId, [FromQuery] DateTime? fromCreatedAtDate, [FromQuery] DateTime? toCreatedAtDate)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
 
         var result = await trackerEntryService.GetTrackerEntriesForTrackerAsync(trackerId, userId, fromCreatedAtDate, toCreatedAtDate);
@@ -52,7 +52,7 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
     [HttpPut("{trackerEntryId:Guid}")]
     public async Task<ActionResult> UpdateTrackerEntryAsync([FromRoute] Guid trackerEntryId, [FromBody] TrackerEntryRequest request)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
 
         await trackerEntryService.UpdateTrackerEntryAsync(trackerEntryId, userId, request);

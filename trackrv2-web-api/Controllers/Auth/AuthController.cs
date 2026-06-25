@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
     [HttpPost("switch-role")]
     public async Task<IActionResult> SwitchRoleAsync([FromBody] SwitchRoleRequest request)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
         var result = await _jwtService.SwitchRole(userId, request);
 

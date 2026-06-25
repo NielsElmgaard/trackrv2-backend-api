@@ -16,7 +16,7 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
     public async Task<ActionResult<TrackerDetailedResponse>> CreateTrackerAsync(
         TrackerRequest request)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
         var result = await trackerService.CreateTrackerAsync(userId, request);
 
@@ -28,7 +28,7 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
     [HttpDelete("{trackerId:Guid}")]
     public async Task<ActionResult> DeleteTrackerAsync([FromRoute] Guid trackerId)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
 
         await trackerService.DeleteTrackerAsync(trackerId, userId);
@@ -40,7 +40,7 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
     public async Task<ActionResult<TrackerDetailedResponse>>
     GetTrackerByIdAsync([FromRoute] Guid trackerId)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
 
         var result = await trackerService.GetTrackerByIdAsync(trackerId, userId);
@@ -51,7 +51,7 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
     [HttpPut("{trackerId:Guid}")]
     public async Task<ActionResult> UpdateTrackerNameAsync([FromRoute] Guid trackerId, [FromBody] string newName)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
 
         await trackerService.UpdateTrackerNameAsync(trackerId, userId, newName);
@@ -65,7 +65,7 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
 GetTrackersByUserAsync([FromQuery] string? name, [FromQuery] DateTime? createdAt,
 [FromQuery] DateTime? lastUpdated)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var userIdStr = User.FindFirstValue("sub")!;
         var userId = Guid.Parse(userIdStr);
 
         var result = await trackerService.GetTrackersByUserAsync(userId, name, createdAt, lastUpdated);

@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -151,6 +152,8 @@ try
     builder.Services
         .AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
     builder.Services.AddScoped<IJwtService, JwtService>();
+
+    JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme =
