@@ -49,10 +49,10 @@ try
 
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("ReactApp", policy =>
+        options.AddPolicy("CorsPolicy", policy =>
         {
             policy.WithOrigins("http://localhost:5173"  // Vite dev server
-            ,"https://nielselmgaard.github.io/trackrv2-frontend" // github pages
+            , "https://nielselmgaard.github.io" // github pages
             )
                 .AllowAnyHeader()
                 .AllowAnyMethod()
@@ -221,8 +221,9 @@ try
     });
 
     app.UseExceptionHandler();
-    app.UseCors("ReactApp");
+    app.UseCors("CorsPolicy");
 
+    app.UseRouting();
     app.UseAuthentication();
     app.UseAuthorization();
 
