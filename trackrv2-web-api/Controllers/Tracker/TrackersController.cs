@@ -72,4 +72,22 @@ GetTrackersByUserAsync([FromQuery] string? name, [FromQuery] DateTime? createdAt
 
         return Ok(result);
     }
+
+    [HttpGet("debug-claims")]
+    [AllowAnonymous]
+    public IActionResult DebugClaims()
+    {
+        var authHeader = Request.Headers["Authorization"].ToString();
+
+        var claimsList = User.Identity?.IsAuthenticated == true
+            ? User.Claims.Select(c => new { c.Type, c.Value }).ToList()
+            : null;
+
+        return Ok(new
+        {
+            HasAuthHeader = !string.IsNullOrEmpty(authHeader),
+            IsAuthenticatedOnServer = User.Identity?.IsAuthenticated,
+            ClaimsReadByServer = claimsList
+        });
+    }
 }
