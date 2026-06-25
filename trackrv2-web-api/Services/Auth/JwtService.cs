@@ -1,15 +1,13 @@
-﻿using System.Security.Claims;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames =
-    Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 using trackrv2_efc;
-using trackrv2_shared.DTOs.Auth;
-using System.IdentityModel.Tokens.Jwt;
 using trackrv2_shared;
+using trackrv2_shared.DTOs.Auth;
 
 
 namespace trackrv2_web_api.Services.Auth;
@@ -179,14 +177,14 @@ public class JwtService : IJwtService
 
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Name, user.Username),
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString())
+            new Claim("name", user.Username),
+            new Claim("sub", user.Id.ToString())
         };
 
         // Specific Role
         if (selectedRole.HasValue && selectedRole.Value != Role.None)
         {
-            claims.Add(new Claim(ClaimTypes.Role, selectedRole.Value.ToString()));
+            claims.Add(new Claim("role", selectedRole.Value.ToString()));
             activeRoleString = selectedRole.Value.ToString();
         }
         else
@@ -197,7 +195,7 @@ public class JwtService : IJwtService
             {
                 if (role != Role.None && user.Roles.HasFlag(role))
                 {
-                    claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+                    claims.Add(new Claim("role", role.ToString()));
                     activeRolesList.Add(role.ToString());
                 }
             }
