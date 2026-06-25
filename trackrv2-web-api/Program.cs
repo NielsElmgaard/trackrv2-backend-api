@@ -171,7 +171,9 @@ try
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true
+            ValidateIssuerSigningKey = true,
+            NameClaimType = "name",
+            RoleClaimType = "role"
         };
     });
 
