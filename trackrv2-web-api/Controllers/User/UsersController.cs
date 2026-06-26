@@ -20,8 +20,7 @@ public class UsersController(IUserService userService)
     {
         var result = await userService.RegisterUserAsync(request);
 
-        return CreatedAtAction(nameof(GetSingleUserByIdAsAdminAsync), new { id = result.Id },
-            result);
+        return StatusCode(StatusCodes.Status201Created, result);
     }
 
     [HttpPut]
