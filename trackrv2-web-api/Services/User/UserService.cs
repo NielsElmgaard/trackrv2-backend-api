@@ -30,15 +30,28 @@ public class UserService : IUserService
     public async Task<UserProfileResponse> RegisterUserAsync(
         UserRequest userRequest)
     {
-        var existingUser = await
-            _ctx.Users.AsNoTracking()
-                .FirstOrDefaultAsync(u =>
-                    u.Username == userRequest.Username);
+        var usernameExists = await _ctx.Users.AsNoTracking()
+            .AnyAsync(u => u.Username == userRequest.Username);
 
-        if (existingUser != null)
+        if (usernameExists)
         {
-            throw new InvalidOperationException(
-                $"Brugernavnet '{userRequest.Username}' er allerede taget.");
+            throw new InvalidOperationException($"Brugernavnet '{userRequest.Username}' er allerede taget.");
+        }
+
+        var emailExists = await _ctx.Users.AsNoTracking()
+            .AnyAsync(u => u.Email == userRequest.Email);
+
+        if (emailExists)
+        {
+            throw new InvalidOperationException($"E-mailen '{userRequest.Email}' er allerede taget.");
+        }
+
+        var phoneNumberExists = await _ctx.Users.AsNoTracking()
+            .AnyAsync(u => u.PhoneNumber == userRequest.PhoneNumber);
+
+        if (phoneNumberExists)
+        {
+            throw new InvalidOperationException($"Telefonnummeret '{userRequest.PhoneNumber}' er allerede taget.");
         }
 
         var user = new trackrv2_efc.Entities.User

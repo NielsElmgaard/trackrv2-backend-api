@@ -112,7 +112,7 @@ public class UsersController(IUserService userService)
             searchRequest.PhoneNumber == 0)
         {
             return BadRequest(
-                "Du skal angive enten 'brugernavn', 'e-mail' eller 'telefonnummer', når du søger efter enkel kunde");
+                "Du skal angive enten 'brugernavn', 'e-mail' eller 'telefonnummer', når du søger efter enkel bruger");
         }
 
         var user =
