@@ -24,7 +24,7 @@ public class UsersController(IUserService userService)
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateUserAsync([FromBody] UserRequest request)
+    public async Task<ActionResult> UpdateUserAsync([FromBody] UserInfoUpdateRequest request)
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var userId = Guid.Parse(userIdStr);
@@ -126,7 +126,9 @@ public class UsersController(IUserService userService)
         GetUsersAsync(
             [FromQuery] Guid? id,
             [FromQuery] string? username,
-            [FromQuery] string? fullName,
+            [FromQuery] string? firstName,
+            [FromQuery] string? middleName,
+            [FromQuery] string? lastName,
             [FromQuery] string? email,
             [FromQuery] long? phoneNumber,
             [FromQuery] string? nationality,
@@ -134,7 +136,7 @@ public class UsersController(IUserService userService)
             [FromQuery] DateTime? createdAt,
             [FromQuery] DateTime? lastUpdated)
     {
-        var users = await userService.GetUsersAsync(id, username, fullName,
+        var users = await userService.GetUsersAsync(id, username, firstName,middleName,lastName,
             email, phoneNumber, nationality, role, createdAt,
             lastUpdated);
         return Ok(users);

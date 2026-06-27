@@ -3,7 +3,9 @@
 public record UserOverviewResponse(
     Guid Id,
     string Username,
-    string FullName,
+    string FirstName,
+    string MiddleName,
+    string LastName,
     string Email,
     long PhoneNumber,
     string? Nationality,

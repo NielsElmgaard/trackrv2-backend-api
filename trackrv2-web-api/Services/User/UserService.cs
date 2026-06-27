@@ -71,12 +71,11 @@ public class UserService : IUserService
         var addedUser = await _ctx.Users.AddAsync(user);
         await _ctx.SaveChangesAsync();
         var addedUserEntity = addedUser.Entity;
-        var fullName =
-            $"{addedUserEntity.FirstName} {addedUserEntity.MiddleName}{(addedUserEntity.MiddleName != null ? " " : "")}{addedUserEntity.LastName}";
+        // var fullName = $"{addedUserEntity.FirstName} {addedUserEntity.MiddleName}{(addedUserEntity.MiddleName != null ? " " : "")}{addedUserEntity.LastName}";
 
 
         return new UserProfileResponse(addedUserEntity.Id,
-            addedUserEntity.Username, fullName, addedUserEntity.Email,
+            addedUserEntity.Username, addedUserEntity.FirstName, addedUserEntity.MiddleName!, addedUserEntity.LastName, addedUserEntity.Email,
             addedUserEntity.PhoneNumber,
             addedUserEntity.Nationality,
             addedUserEntity.Roles, addedUserEntity.CreatedAt,
@@ -85,7 +84,7 @@ public class UserService : IUserService
 
     // Basic User Info update
     public async Task UpdateUserAsync(Guid id,
-        UserRequest userRequest)
+        UserInfoUpdateRequest userRequest)
     {
         var user = await _ctx.Users
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -227,11 +226,10 @@ public class UserService : IUserService
                     $"En bruger med id'et: '{id}' kunne ikke findes.");
             }
 
-            var fullName =
-                $"{user.FirstName} {user.MiddleName}{(user.MiddleName != null ? " " : "")}{user.LastName}";
+            // var fullName = $"{user.FirstName} {user.MiddleName}{(user.MiddleName != null ? " " : "")}{user.LastName}";
 
             return new UserProfileResponse(user.Id,
-                user.Username, fullName, user.Email,
+                user.Username, user.FirstName, user.MiddleName!, user.LastName, user.Email,
                 user.PhoneNumber,
                 user.Nationality,
                 user.Roles,
@@ -277,12 +275,11 @@ public class UserService : IUserService
                 $"Kunden kunne ikke findes.");
         }
 
-        var fullName =
-            $"{user.FirstName} {user.MiddleName}{(user.MiddleName != null ? " " : "")}{user.LastName}";
+        // var fullName = $"{user.FirstName} {user.MiddleName}{(user.MiddleName != null ? " " : "")}{user.LastName}";
 
 
         return new UserProfileResponse(user.Id,
-            user.Username, fullName, user.Email,
+            user.Username, user.FirstName, user.MiddleName!, user.LastName, user.Email,
             user.PhoneNumber,
             user.Nationality,
             user.Roles,
@@ -292,21 +289,20 @@ public class UserService : IUserService
 
     public async Task<List<UserOverviewResponse>> GetUsersAsync(Guid? id,
         string? username,
-        string? fullName, string? email, long? phoneNumber, string? nationality,
+        string? firstName, string? middleName, string? lastName, string? email, long? phoneNumber, string? nationality,
        Role? role, DateTime? createdAt,
         DateTime? lastUpdated)
     {
-        var users = await GetManyUsers(id, username, fullName, email,
+        var users = await GetManyUsers(id, username, firstName, middleName, lastName, email,
             phoneNumber, nationality, role, createdAt,
             lastUpdated);
 
 
         return users.Select(user =>
         {
-            var userFullName =
-                $"{user.FirstName} {user.MiddleName}{(user.MiddleName != null ? " " : "")}{user.LastName}";
+            // var userFullName = $"{user.FirstName} {user.MiddleName}{(user.MiddleName != null ? " " : "")}{user.LastName}";
             return new UserOverviewResponse(user.Id,
-                user.Username, userFullName, user.Email,
+                user.Username, user.FirstName, user.MiddleName!, user.LastName, user.Email,
                 user.PhoneNumber,
                 user.Nationality,
                 user.Roles,
@@ -319,7 +315,7 @@ public class UserService : IUserService
     // Filter helper method
     private async Task<List<trackrv2_efc.Entities.User>> GetManyUsers(Guid? id,
         string? username,
-        string? fullName, string? email, long? phoneNumber, string? nationality,
+        string? firstName, string? middleName, string? lastName, string? email, long? phoneNumber, string? nationality,
         Role? role, DateTime? createdAt,
         DateTime? lastUpdated)
     {
@@ -336,12 +332,22 @@ public class UserService : IUserService
                 EF.Functions.ILike(u.Username, username));
         }
 
-        if (!string.IsNullOrWhiteSpace(fullName))
+        if (!string.IsNullOrWhiteSpace(firstName))
         {
             query = query.Where(u =>
-                EF.Functions.ILike(u.FirstName, fullName) ||
-                (u.MiddleName != null && EF.Functions.ILike(u.MiddleName, fullName)) ||
-                EF.Functions.ILike(u.LastName, fullName));
+                EF.Functions.ILike(u.FirstName, firstName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(middleName))
+        {
+            query = query.Where(u =>
+                EF.Functions.ILike(u.MiddleName!, middleName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(lastName))
+        {
+            query = query.Where(u =>
+                EF.Functions.ILike(u.LastName, lastName));
         }
 
         if (!string.IsNullOrWhiteSpace(email))

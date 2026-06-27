@@ -10,7 +10,7 @@ public interface IUserService
     Task<UserProfileResponse> RegisterUserAsync(
         UserRequest userRequest);
 
-    Task UpdateUserAsync(Guid id, UserRequest userRequest);
+    Task UpdateUserAsync(Guid id, UserInfoUpdateRequest userRequest);
 
     Task DeleteUserAsync(Guid id);
 
@@ -28,7 +28,7 @@ public interface IUserService
     // Admin role required
     Task<List<UserOverviewResponse>> GetUsersAsync(Guid? id,
         string? username,
-        string? fullName, string? email, long? phoneNumber, string? nationality,
+        string? firstName,string? middleName, string? lastName, string? email, long? phoneNumber, string? nationality,
         Role? role, DateTime? createdAt,
         DateTime? lastUpdated);
 }
