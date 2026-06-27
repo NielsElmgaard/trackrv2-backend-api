@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -99,6 +100,36 @@ try
                 JsonNamingPolicy.CamelCase;
         });
     builder.Services.AddMemoryCache();
+    // builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+    // builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+    builder.Services.AddInMemoryRateLimiting();
+    builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+    builder.Services.Configure<IpRateLimitOptions>(options =>
+    {
+        options.EnableEndpointRateLimiting = true;
+        options.StackBlockedRequests = false;
+        options.HttpStatusCode = 429;
+        options.RealIpHeader = "X-Forwarded-For"; // to get real IP address
+        options.ClientIdHeader = "X-ClientId"; // to identify clients
+        options.GeneralRules = [
+    new RateLimitRule {
+        Endpoint = "*:/api/v1/auth/login", // login endpoint
+        Period = "1m",
+        Limit = 5 // 5 request per minute
+    },
+    new RateLimitRule {
+        Endpoint = "POST:/api/v1/users", // register user endpoint
+        Period = "1m",
+        Limit = 3 // 3 request per minute
+    },
+
+    new RateLimitRule {
+        Endpoint = "*", // rate limit for all other endpoints
+        Period = "10s",
+        Limit = 20 // 20 requests per 10 seconds
+    }
+];
+    });
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     // builder.Services.AddOpenApi();
     builder.Services.AddEndpointsApiExplorer();
@@ -219,7 +250,7 @@ try
         // app.UseHttpsRedirection(); // Uncomment in local production
 
     }
-
+    app.UseExceptionHandler();
     //app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
@@ -227,14 +258,11 @@ try
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "TrackrV2 API v1");
         c.RoutePrefix = "swagger";
     });
-
-    app.UseExceptionHandler();
-    app.UseCors("CorsPolicy");
-
     app.UseRouting();
+    app.UseCors("CorsPolicy");
+    app.UseIpRateLimiting();
     app.UseAuthentication();
     app.UseAuthorization();
-
     app.MapControllers();
 
     app.Run();
