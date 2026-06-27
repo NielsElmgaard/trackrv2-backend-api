@@ -111,6 +111,11 @@ try
         options.HttpStatusCode = 429;
         options.RealIpHeader = "X-Forwarded-For"; // to get real IP address
         options.ClientIdHeader = "X-ClientId"; // to identify clients
+        options.QuotaExceededResponse = new QuotaExceededResponse
+        {
+            ContentType = "application/problem+json",
+            Content = "{\"detail\":\"For mange anmodninger på samme tid. Prøv igen om lidt.\"}"
+        };
         options.GeneralRules = [
     new RateLimitRule {
         Endpoint = "*:/api/v1/auth/login", // login endpoint
