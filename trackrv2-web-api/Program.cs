@@ -114,7 +114,7 @@ try
         options.QuotaExceededResponse = new QuotaExceededResponse
         {
             ContentType = "application/problem+json",
-            Content = "{\"detail\":\"For mange anmodninger på samme tid. Prøv igen om lidt.\"}"
+            Content = "{{\n  \"title\": \"For mange anmodninger\",\n  \"status\": 429,\n  \"detail\": \"For mange anmodninger på samme tid. Prøv igen om lidt.\"\n}}"
         };
         options.GeneralRules = [
     new RateLimitRule {
