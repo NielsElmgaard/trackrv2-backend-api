@@ -64,7 +64,7 @@ public class UsersController(IUserService userService)
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var userId = Guid.Parse(userIdStr);
 
-        await userService.UpdateUserPasswordAsync(userId, request.Password);
+        await userService.UpdateUserPasswordAsync(userId, request);
 
         return NoContent();
     }
