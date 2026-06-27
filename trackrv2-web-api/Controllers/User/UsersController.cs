@@ -59,12 +59,12 @@ public class UsersController(IUserService userService)
     }
 
     [HttpPut("password")]
-    public async Task<ActionResult> UpdateUserPasswordAsync([FromBody] string newPassword) // secured with https
+    public async Task<ActionResult> UpdateUserPasswordAsync([FromBody] UpdatePasswordRequest request) // secured with https
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var userId = Guid.Parse(userIdStr);
 
-        await userService.UpdateUserPasswordAsync(userId, newPassword);
+        await userService.UpdateUserPasswordAsync(userId, request.Password);
 
         return NoContent();
     }

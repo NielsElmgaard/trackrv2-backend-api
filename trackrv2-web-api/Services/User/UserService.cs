@@ -170,7 +170,7 @@ public class UserService : IUserService
         _cache.Remove(cacheKey);
     }
 
-    public async Task UpdateUserPasswordAsync(Guid id, string newPassword)
+    public async Task UpdateUserPasswordAsync(Guid id, UpdatePasswordRequest request)
     {
         var user = await _ctx.Users
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -181,7 +181,7 @@ public class UserService : IUserService
         }
 
         user.Password =
-            _passwordHasher.HashPassword(user, newPassword);
+            _passwordHasher.HashPassword(user, request.Password);
 
         await _ctx.SaveChangesAsync();
 

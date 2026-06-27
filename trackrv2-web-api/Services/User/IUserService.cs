@@ -14,7 +14,7 @@ public interface IUserService
 
     Task DeleteUserAsync(Guid id);
 
-    Task UpdateUserPasswordAsync(Guid id, string newPassword);
+    Task UpdateUserPasswordAsync(Guid id, UpdatePasswordRequest request);
 
     Task UpdateUserRolesAsync(Guid id, UpdateUserRolesRequest request);
 
