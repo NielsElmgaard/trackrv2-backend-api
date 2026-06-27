@@ -118,7 +118,7 @@ try
         };
         options.GeneralRules = [
     new RateLimitRule {
-        Endpoint = "*:/api/v1/auth/login", // login endpoint
+        Endpoint = "POST:/api/v1/auth/login", // login endpoint
         Period = "1m",
         Limit = 5 // 5 request per minute
     },
