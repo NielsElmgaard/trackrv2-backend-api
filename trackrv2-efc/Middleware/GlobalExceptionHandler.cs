@@ -58,7 +58,9 @@ public sealed class GlobalExceptionHandler(
                             "Ressourcen blev ikke fundet",
                         StatusCodes.Status401Unauthorized => "Ikke autoriseret",
                         StatusCodes.Status400BadRequest => "Ugyldig anmodning",
+                         StatusCodes.Status429TooManyRequests=> "For mange anmodninger på samme tid. Prøv igen senere.",
                         _ => "En uventet fejl opstod"
+                       
                     },
                     Status = statusCode,
                     Detail = statusCode ==
