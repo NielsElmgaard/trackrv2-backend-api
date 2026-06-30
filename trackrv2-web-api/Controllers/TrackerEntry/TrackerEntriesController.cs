@@ -21,8 +21,8 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
         var userId = Guid.Parse(userIdStr);
         var result = await trackerEntryService.CreateTrackerEntryAsync(trackerId, userId, request);
 
-        return CreatedAtAction(nameof(GetTrackerEntriesForTrackerAsync), new { trackerId = result.Id },
-            result);
+        return CreatedAtRoute("GetTrackerEntriesForTracker", new { trackerId = trackerId }, result);
+
     }
 
 
@@ -37,7 +37,7 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
         return NoContent();
     }
 
-    [HttpGet("{trackerId:Guid}")]
+    [HttpGet("{trackerId:Guid}", Name = "GetTrackerEntriesForTracker")]
     public async Task<ActionResult<TrackerDetailedResponse>>
     GetTrackerEntriesForTrackerAsync([FromRoute] Guid trackerId, [FromQuery] DateTime? fromCreatedAtDate, [FromQuery] DateTime? toCreatedAtDate)
     {

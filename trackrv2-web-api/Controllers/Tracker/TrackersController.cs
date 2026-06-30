@@ -20,8 +20,7 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
         var userId = Guid.Parse(userIdStr);
         var result = await trackerService.CreateTrackerAsync(userId, request);
 
-        return CreatedAtAction(nameof(GetTrackerByIdAsync), new { trackerId = result.Id },
-            result);
+        return CreatedAtRoute("GetTrackerById", new { trackerId = result.Id }, result);
     }
 
 
@@ -36,7 +35,7 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
         return NoContent();
     }
 
-    [HttpGet("{trackerId:Guid}")]
+    [HttpGet("{trackerId:Guid}", Name = "GetTrackerById")]
     public async Task<ActionResult<TrackerDetailedResponse>>
     GetTrackerByIdAsync([FromRoute] Guid trackerId)
     {
