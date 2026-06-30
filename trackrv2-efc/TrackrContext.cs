@@ -35,7 +35,7 @@ public class TrackrContext : DbContext, IDataProtectionKeyContext
             .HasMany(f => f.Values)
             .WithOne(v => v.FieldDefinition)
             .HasForeignKey(v => v.FieldDefinitionId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<TrackerEntry>()
             .HasMany(e => e.Values)
