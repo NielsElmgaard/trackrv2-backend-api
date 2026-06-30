@@ -13,7 +13,7 @@ namespace trackrv2_web_api.Controllers.TrackerEntry;
 public class TrackerEntriesController(ITrackerEntryService trackerEntryService) : ControllerBase
 {
     [HttpPost("{trackerId:Guid}")]
-    public async Task<ActionResult<TrackerDetailedResponse>> CreateTrackerAsync(
+    public async Task<ActionResult<TrackerEntryResponse>> CreateTrackerEntryAsync(
         [FromRoute] Guid trackerId, [FromBody] TrackerEntryRequest request)
     {
 

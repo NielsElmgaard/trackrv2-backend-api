@@ -13,7 +13,7 @@ namespace trackrv2_web_api.Controllers.Tracker;
 public class TrackersController(ITrackerService trackerService) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<TrackerDetailedResponse>> CreateTrackerAsync(
+    public async Task<ActionResult<TrackerDetailedResponse>> CreateTrackerAsync([FromBody]
         TrackerRequest request)
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
