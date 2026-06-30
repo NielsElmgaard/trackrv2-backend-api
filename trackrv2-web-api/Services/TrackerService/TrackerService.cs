@@ -114,45 +114,43 @@ public class TrackerService : ITrackerService
         }))!;
     }
 
-    public async Task UpdateTrackerNameAsync(Guid trackerId, Guid userId, string newName)
+    public async Task UpdateTrackerAsync(Guid trackerId, Guid userId, TrackerRequest request)
     {
         var existingTrackerForUser = await _ctx.Trackers
-       .FirstOrDefaultAsync(t => t.Id == trackerId && t.UserId == userId);
+            .Include(t => t.Fields)
+            .FirstOrDefaultAsync(t => t.Id == trackerId && t.UserId == userId);
 
         if (existingTrackerForUser == null)
         {
-            var existingUser = await _ctx.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == userId);
-            throw new KeyNotFoundException($"Trackeren med id'et '{trackerId}' og brugeren '{existingUser?.Username}' blev ikke fundet");
+            throw new KeyNotFoundException($"Tracker blev ikke fundet.");
         }
 
-        // If updating tracker name make sure it is not taken already by same user
-
-        if (existingTrackerForUser.Name != newName)
+        if (existingTrackerForUser.Name != request.Name)
         {
-            var trackerNameForUserExists = await _ctx.Trackers
-            .AnyAsync(t => t.UserId == userId && t.Name == newName);
+            var nameExists = await _ctx.Trackers.AnyAsync(t => t.UserId == userId && t.Name == request.Name);
+            if (nameExists) throw new InvalidOperationException($"Du har allerede en tracker med navnet '{request.Name}'.");
 
-            if (trackerNameForUserExists)
-            {
-                var existingUser = await _ctx.Users
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Id == userId);
-                throw new InvalidOperationException($"Bruger '{existingUser?.Username}' har allerede en tracker med navnet '{newName}'.");
-            }
-
+            existingTrackerForUser.Name = request.Name;
         }
 
-        existingTrackerForUser.Name = newName;
+        foreach (var fieldRequest in request.Fields)
+        {
+            if (!existingTrackerForUser.Fields.Any(f => f.Label == fieldRequest.Label))
+            {
+                existingTrackerForUser.Fields.Add(new FieldDefinition
+                {
+                    Label = fieldRequest.Label,
+                    Type = fieldRequest.Type
+                });
+            }
+        }
 
         await _ctx.SaveChangesAsync();
 
-        string trackerCacheKey = $"{TrackerCachePrefix}{trackerId}";
-        _cache.Remove(trackerCacheKey);
-        string userCacheKey = $"{UserCachePrefix}{userId}";
-        _cache.Remove(userCacheKey);
+        _cache.Remove($"{TrackerCachePrefix}{trackerId}");
+        _cache.Remove($"{UserCachePrefix}{userId}");
     }
+
 
     public async Task<List<TrackerOverviewResponse>> GetTrackersByUserAsync(Guid userId, string? name, DateTime? createdAt,
     DateTime? lastUpdated)

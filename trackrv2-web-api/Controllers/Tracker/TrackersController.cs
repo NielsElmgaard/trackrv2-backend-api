@@ -48,12 +48,12 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
     }
 
     [HttpPut("{trackerId:Guid}")]
-    public async Task<ActionResult> UpdateTrackerNameAsync([FromRoute] Guid trackerId, [FromBody] string newName)
+    public async Task<ActionResult> UpdateTrackerAsync([FromRoute] Guid trackerId, [FromBody] TrackerRequest request)
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var userId = Guid.Parse(userIdStr);
 
-        await trackerService.UpdateTrackerNameAsync(trackerId, userId, newName);
+        await trackerService.UpdateTrackerAsync(trackerId, userId, request);
 
         return NoContent();
     }
