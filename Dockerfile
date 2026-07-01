@@ -1,5 +1,6 @@
 # 1. Base runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+USER app
 WORKDIR /app
 EXPOSE 8080
 
@@ -9,6 +10,7 @@ WORKDIR /src
 
 COPY ["trackrv2-web-api/trackrv2-web-api.csproj", "trackrv2-web-api/"]
 COPY ["trackrv2-efc/trackrv2-efc.csproj", "trackrv2-efc/"]
+COPY ["trackrv2-shared/trackrv2-shared.csproj", "trackrv2-shared/"]
 
 RUN dotnet restore "trackrv2-web-api/trackrv2-web-api.csproj"
 

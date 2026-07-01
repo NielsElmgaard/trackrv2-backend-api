@@ -158,8 +158,8 @@ public class TrackerEntryService : ITrackerEntryService
     public async Task UpdateTrackerEntryAsync(Guid trackerEntryId, Guid userId, TrackerEntryRequest request)
     {
         var existingTrackerEntry = await _ctx.TrackerEntries
-        .Include(t => t.Values)
-        .FirstOrDefaultAsync(t => t.Id == trackerEntryId && t.Tracker.UserId == userId);
+            .Include(t => t.Values)
+            .FirstOrDefaultAsync(t => t.Id == trackerEntryId && t.Tracker.UserId == userId);
 
         if (existingTrackerEntry == null)
         {
@@ -169,14 +169,34 @@ public class TrackerEntryService : ITrackerEntryService
             throw new KeyNotFoundException($"Tracker Entry'en med id'et '{trackerEntryId}' og brugeren '{existingUser?.Username}' blev ikke fundet");
         }
 
-        existingTrackerEntry.Values.Clear();
+        bool isModified = false;
+
         foreach (var ev in request.Values)
         {
-            existingTrackerEntry.Values.Add(new EntryValue
+            var existingValue = existingTrackerEntry.Values
+                .FirstOrDefault(v => v.FieldDefinitionId == ev.FieldDefinitionId);
+
+            if (existingValue != null)
             {
-                Value = ev.Value,
-                FieldDefinitionId = ev.FieldDefinitionId,
-            });
+                if (existingValue.Value != ev.Value)
+                {
+                    existingValue.Value = ev.Value;
+                    isModified = true;
+                }
+            }
+            else
+            {
+                existingTrackerEntry.Values.Add(new EntryValue
+                {
+                    Value = ev.Value,
+                    FieldDefinitionId = ev.FieldDefinitionId,
+                });
+                isModified = true;
+            }
+        }
+        if (isModified)
+        {
+            _ctx.Entry(existingTrackerEntry).State = EntityState.Modified;
         }
 
         await _ctx.SaveChangesAsync();
@@ -186,6 +206,5 @@ public class TrackerEntryService : ITrackerEntryService
         _cache.Remove(trackerCacheKey);
         string userCacheKey = $"{UserCachePrefix}{userId}";
         _cache.Remove(userCacheKey);
-
     }
 }

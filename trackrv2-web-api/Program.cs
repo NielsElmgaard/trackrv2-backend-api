@@ -49,6 +49,11 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenAnyIP(8080);
+    });
+
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("CorsPolicy", policy =>
@@ -196,7 +201,7 @@ try
         options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     }).AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = true; // change to TRUE in production
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment(); // TRUE in production
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -228,7 +233,7 @@ try
     var app = builder.Build();
 
 
-    // Database
+    // Database migration at startup
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
