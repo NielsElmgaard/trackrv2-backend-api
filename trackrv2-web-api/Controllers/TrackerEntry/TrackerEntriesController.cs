@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using trackrv2_shared.DTOs;
@@ -16,9 +15,9 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
     public async Task<ActionResult<TrackerEntryResponse>> CreateTrackerEntryAsync(
         [FromRoute] Guid trackerId, [FromBody] TrackerEntryRequest request)
     {
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
 
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
         var result = await trackerEntryService.CreateTrackerEntryAsync(trackerId, userId, request);
 
         return CreatedAtRoute("GetTrackerEntriesForTracker", new { trackerId = trackerId }, result);
@@ -29,8 +28,8 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
     [HttpDelete("{trackerEntryId:Guid}")]
     public async Task<ActionResult> DeleteTrackerEntryAsync([FromRoute] Guid trackerEntryId)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
 
         await trackerEntryService.DeleteTrackerEntryAsync(trackerEntryId, userId);
 
@@ -41,8 +40,8 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
     public async Task<ActionResult<TrackerDetailedResponse>>
     GetTrackerEntriesForTrackerAsync([FromRoute] Guid trackerId, [FromQuery] DateTime? fromCreatedAtDate, [FromQuery] DateTime? toCreatedAtDate)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
 
         var result = await trackerEntryService.GetTrackerEntriesForTrackerAsync(trackerId, userId, fromCreatedAtDate, toCreatedAtDate);
 
@@ -52,8 +51,8 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
     [HttpPut("{trackerEntryId:Guid}")]
     public async Task<ActionResult> UpdateTrackerEntryAsync([FromRoute] Guid trackerEntryId, [FromBody] TrackerEntryRequest request)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
 
         await trackerEntryService.UpdateTrackerEntryAsync(trackerEntryId, userId, request);
 

@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using trackrv2_shared;
 using trackrv2_shared.DTOs.User;
@@ -26,8 +25,8 @@ public class UsersController(IUserService userService)
     [HttpPut]
     public async Task<ActionResult> UpdateUserAsync([FromBody] UserInfoUpdateRequest request)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
 
         await userService.UpdateUserAsync(userId, request);
 
@@ -50,8 +49,8 @@ public class UsersController(IUserService userService)
     [HttpDelete]
     public async Task<ActionResult> DeleteUserAsync()
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
 
         await userService.DeleteUserAsync(userId);
 
@@ -61,8 +60,8 @@ public class UsersController(IUserService userService)
     [HttpPut("password")]
     public async Task<ActionResult> UpdateUserPasswordAsync([FromBody] UpdatePasswordRequest request) // secured with https
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
 
         await userService.UpdateUserPasswordAsync(userId, request);
 
@@ -85,8 +84,9 @@ public class UsersController(IUserService userService)
     public async Task<ActionResult<UserProfileResponse>>
         GetSingleUserByIdAsync()
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
+
         var result = await userService.GetUserByIdAsync(userId);
 
         return Ok(result);
@@ -136,7 +136,7 @@ public class UsersController(IUserService userService)
             [FromQuery] DateTime? createdAt,
             [FromQuery] DateTime? lastUpdated)
     {
-        var users = await userService.GetUsersAsync(id, username, firstName,middleName,lastName,
+        var users = await userService.GetUsersAsync(id, username, firstName, middleName, lastName,
             email, phoneNumber, nationality, role, createdAt,
             lastUpdated);
         return Ok(users);

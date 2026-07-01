@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using trackrv2_shared.DTOs.Auth;
 using trackrv2_web_api.Services.Auth;
@@ -77,8 +76,8 @@ public class AuthController : ControllerBase
     [HttpPost("switch-role")]
     public async Task<IActionResult> SwitchRoleAsync([FromBody] SwitchRoleRequest request)
     {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var userId = Guid.Parse(userIdStr);
+        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userId = Guid.Parse(userIdStr!);
         var result = await _jwtService.SwitchRole(userId, request);
 
         if (result == null)
