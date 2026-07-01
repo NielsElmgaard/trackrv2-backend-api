@@ -168,10 +168,13 @@ public class JwtService : IJwtService
 
     private string CreateAccessTokenWithSpecificRole(trackrv2_efc.Entities.User user, Role? selectedRole, out DateTime expiryTime, out string activeRoleString)
     {
-        var issuer = _configuration["JwtConfig:Issuer"];
-        var audience = _configuration["JwtConfig:Audience"];
+        var rawIssuer = _configuration["JwtConfig:Issuer"] ?? "http://localhost:8080";
+        var rawAudience = _configuration["JwtConfig:Audience"] ?? "http://localhost:5173";
         var key = _configuration["JwtConfig:Key"];
         var tokenValidityMins = _configuration.GetValue<int>("JwtConfig:TokenValidityMins", 15);
+
+        var issuer = rawIssuer.Split(',')[0].Trim();
+        var audience = rawAudience.Split(',')[0].Trim();
 
         expiryTime = DateTime.UtcNow.AddMinutes(tokenValidityMins);
 

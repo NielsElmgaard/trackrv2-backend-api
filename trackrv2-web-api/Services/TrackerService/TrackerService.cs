@@ -29,10 +29,8 @@ public class TrackerService : ITrackerService
 
         if (trackerNameForUserExists)
         {
-            var existingUser = await _ctx.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == userId);
-            throw new InvalidOperationException($"Bruger '{existingUser?.Username}' har allerede en tracker med navnet '{request.Name}'.");
+
+            throw new InvalidOperationException($"Du har allerede en tracker med navnet '{request.Name}'.");
         }
 
         var tracker = new Tracker
@@ -50,8 +48,7 @@ public class TrackerService : ITrackerService
         await _ctx.SaveChangesAsync();
         var addedTrackerEntity = addedTracker.Entity;
 
-        string userCacheKey = $"{UserCachePrefix}{userId}";
-        _cache.Remove(userCacheKey);
+        _cache.Remove($"{UserCachePrefix}{userId}");
 
         return new TrackerDetailedResponse(addedTrackerEntity.Id, addedTrackerEntity.Name, addedTrackerEntity.UserId, addedTrackerEntity.CreatedAt, addedTrackerEntity.LastUpdated, addedTrackerEntity.Fields.Select(f => new FieldDefinitionResponse(
             f.Id,
@@ -69,24 +66,19 @@ public class TrackerService : ITrackerService
 
         if (existingTrackerForUser == null)
         {
-            var existingUser = await _ctx.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == userId);
-            throw new KeyNotFoundException($"Trackeren med id'et '{trackerId}' og brugeren '{existingUser?.Username}' blev ikke fundet");
+            throw new KeyNotFoundException($"Trackeren med id'et '{trackerId}' blev ikke fundet for denne bruger.");
         }
 
         _ctx.Trackers.Remove(existingTrackerForUser);
         await _ctx.SaveChangesAsync();
 
-        string trackerCacheKey = $"{TrackerCachePrefix}{trackerId}";
-        _cache.Remove(trackerCacheKey);
-        string userCacheKey = $"{UserCachePrefix}{userId}";
-        _cache.Remove(userCacheKey);
+        _cache.Remove($"{TrackerCachePrefix}{userId}_{trackerId}");
+        _cache.Remove($"{UserCachePrefix}{userId}");
     }
 
     public async Task<TrackerDetailedResponse> GetTrackerByIdAsync(Guid trackerId, Guid userId)
     {
-        string cacheKey = $"{TrackerCachePrefix}{trackerId}";
+        string cacheKey = $"{TrackerCachePrefix}{userId}_{trackerId}";
 
         return (await _cache.GetOrCreateAsync(cacheKey, async entry =>
         {
@@ -99,11 +91,8 @@ public class TrackerService : ITrackerService
 
             if (tracker == null)
             {
-                var existingUser = await _ctx.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Id == userId);
-                throw new KeyNotFoundException($"Brugeren '{existingUser?.Username}' og trackeren med id'et '{trackerId}' blev ikke fundet eller macther ikke.");
 
+                throw new KeyNotFoundException($"Trackeren med id'et '{trackerId}' blev ikke fundet for denne bruger.");
             }
 
             return new TrackerDetailedResponse(tracker.Id,
@@ -133,6 +122,10 @@ public class TrackerService : ITrackerService
             existingTrackerForUser.Name = request.Name;
         }
 
+        // Remove fields that are not in the request anymore
+        existingTrackerForUser.Fields.RemoveAll(f => !request.Fields.Any(rf => rf.Label == f.Label));
+
+        // Add new fields
         foreach (var fieldRequest in request.Fields)
         {
             if (!existingTrackerForUser.Fields.Any(f => f.Label == fieldRequest.Label))
@@ -147,7 +140,7 @@ public class TrackerService : ITrackerService
 
         await _ctx.SaveChangesAsync();
 
-        _cache.Remove($"{TrackerCachePrefix}{trackerId}");
+        _cache.Remove($"{TrackerCachePrefix}{userId}_{trackerId}");
         _cache.Remove($"{UserCachePrefix}{userId}");
     }
 
@@ -155,15 +148,12 @@ public class TrackerService : ITrackerService
     public async Task<List<TrackerOverviewResponse>> GetTrackersByUserAsync(Guid userId, string? name, DateTime? createdAt,
     DateTime? lastUpdated)
     {
-        var existingUser = await _ctx.Users
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (existingUser == null)
+        var userExists = await _ctx.Users.AnyAsync(u => u.Id == userId);
+        if (!userExists)
         {
             throw new KeyNotFoundException($"brugeren med id'et '{userId}' blev ikke fundet");
         }
-        var trackers = await GetManyTrackers(name, createdAt, lastUpdated);
+        var trackers = await GetManyTrackers(userId, name, createdAt, lastUpdated);
 
         return trackers.Select(tracker =>
          {
@@ -175,12 +165,12 @@ public class TrackerService : ITrackerService
          }).ToList();
     }
 
-    private async Task<List<Tracker>> GetManyTrackers(
+    private async Task<List<Tracker>> GetManyTrackers(Guid userId,
         string? name,
         DateTime? createdAt,
         DateTime? lastUpdated)
     {
-        var query = _ctx.Trackers.AsNoTracking().AsQueryable();
+        var query = _ctx.Trackers.AsNoTracking().Where(t => t.UserId == userId).AsQueryable();
 
 
         if (!string.IsNullOrWhiteSpace(name))

@@ -84,7 +84,7 @@ try
         }
         else
         {
-            // Din direkte forbindelse til lokal brug
+            //Direct connection for local development (no Docker)
             connectionString = $"Host=aws-0-eu-west-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.fzqputdxlzlnvslgdmdj;Password={supabaseDbPassword};Pooling=true;";
         }
     }
@@ -203,17 +203,27 @@ try
     {
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment(); // TRUE in production
         options.SaveToken = true;
+        var jwtKey = builder.Configuration["JwtConfig:Key"]
+                     ?? Environment.GetEnvironmentVariable("JwtConfig__Key");
+
+        var rawIssuers = builder.Configuration["JwtConfig:Issuer"] ?? "http://localhost:8080";
+        var rawAudiences = builder.Configuration["JwtConfig:Audience"] ?? "http://localhost:5173";
+
+        var allowedIssuers = rawIssuers.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        var allowedAudiences = rawAudiences.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
-            ValidAudience = builder.Configuration["JwtConfig:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    builder.Configuration["JwtConfig:Key"]!)),
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!)),
+            ValidateIssuer = true,
+            ValidIssuers = allowedIssuers,
+
+            ValidateAudience = true,
+            ValidAudiences = allowedAudiences,
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
             NameClaimType = "name",
             RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         };

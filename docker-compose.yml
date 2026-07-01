@@ -10,9 +10,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - JwtConfig__Key=${JWT_SECRET_KEY}
-      - JwtConfig__Issuer=http://localhost:8080
-      - JwtConfig__Audience=http://localhost:8080
+      - JwtConfig__Issuer=${JwtConfig__Issuer}
+      - JwtConfig__Audience=${JwtConfig__Audience}
       - DB_PASSWORD=${DB_PASSWORD}
+      - CONNECTION_STRING=${CONNECTION_STRING}
       - SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
       - DOTNET_RUNNING_IN_CONTAINER=true
     networks:
