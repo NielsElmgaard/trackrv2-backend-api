@@ -22,5 +22,5 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.ACR_REGISTRY }}/trackr-api:latest -f ./trackrv2-backend-api/Dockerfile .
-          docker push ${{ secrets.ACR_REGISTRY }}/trackr-api:latest
+          docker build -t ${{ secrets.ACR_REGISTRY }}/trackr-backend:latest -f ./trackrv2-backend-api/Dockerfile .
+          docker push ${{ secrets.ACR_REGISTRY }}/trackr-backend:latest
