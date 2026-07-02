@@ -122,19 +122,54 @@ public class TrackerService : ITrackerService
             existingTrackerForUser.Name = request.Name;
         }
 
-        // Remove fields that are not in the request anymore
-        existingTrackerForUser.Fields.RemoveAll(f => !request.Fields.Any(rf => rf.Label == f.Label));
 
-        // Add new fields
+        // All existing fields
+        var requestFieldIds = request.Fields
+                .Where(rf => rf.Id != Guid.Empty)
+                .Select(rf => rf.Id)
+                .ToList();
+
+        // Remove fields that are not in the request anymore based on ID
+        var fieldsToRemove = existingTrackerForUser.Fields
+        .Where(f => !requestFieldIds.Contains(f.Id))
+        .ToList();
+        foreach (var fieldToRemove in fieldsToRemove)
+        {
+            _ctx.FieldDefinitions.Remove(fieldToRemove);
+        }
+
+        // Add new fields or update existing ones
         foreach (var fieldRequest in request.Fields)
         {
-            if (!existingTrackerForUser.Fields.Any(f => f.Label == fieldRequest.Label))
+            if (fieldRequest.Id == Guid.Empty)
             {
                 existingTrackerForUser.Fields.Add(new FieldDefinition
                 {
                     Label = fieldRequest.Label,
                     Type = fieldRequest.Type
                 });
+            }
+            else
+            {
+                var existingField = existingTrackerForUser.Fields.FirstOrDefault(f => f.Id == fieldRequest.Id);
+
+                if (existingField != null)
+                {
+
+                    existingField.Label = fieldRequest.Label;
+
+                    if (existingField.Type != fieldRequest.Type)
+                    {
+                        var hasExistingValues = await _ctx.EntryValues.AnyAsync(v => v.FieldDefinitionId == existingField.Id);
+
+                        if (hasExistingValues)
+                        {
+                            throw new InvalidOperationException($"Du har allerede værdier i feltet og kan derfor ikke ændre datatypen for feltet '{existingField.Label}'.");
+                        }
+
+                        existingField.Type = fieldRequest.Type;
+                    }
+                }
             }
         }
 
@@ -143,7 +178,6 @@ public class TrackerService : ITrackerService
         _cache.Remove($"{TrackerCachePrefix}{userId}_{trackerId}");
         _cache.Remove($"{UserCachePrefix}{userId}");
     }
-
 
     public async Task<List<TrackerOverviewResponse>> GetTrackersByUserAsync(Guid userId, string? name, DateTime? createdAt,
     DateTime? lastUpdated)

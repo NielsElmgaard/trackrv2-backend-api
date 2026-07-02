@@ -1,3 +1,3 @@
 namespace trackrv2_shared.DTOs;
 
-public record TrackerRequest(string Name, List<FieldDefinitionRequest> Fields);
+public record TrackerRequest(Guid? TrackerId, string Name, List<FieldDefinitionRequest> Fields);
