@@ -58,16 +58,19 @@ try
     {
         options.AddPolicy("CorsPolicy", policy =>
         {
-            policy.WithOrigins("http://localhost:5173"  // Vite dev server
-            , "https://nielselmgaard.github.io",
+            policy.WithOrigins(
+                "http://localhost:5173",            // Vite dev server
+                "https://github.io",
                 "https://trackr-v2.me",
+                "https://www.trackr-v2.me",
                 "https://api.trackr-v2.me"
             )
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
         });
     });
+
 
     builder.Host.UseSerilog();
 
