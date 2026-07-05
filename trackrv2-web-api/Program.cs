@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -80,7 +79,7 @@ try
         var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
         if (isDocker)
         {
-            connectionString = $"Host=db;Port=5432;Database=trackrv2_db;Username=postgres;Password={dbPassword};";
+            connectionString = $"Host=aws-0-eu-west-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.fzqputdxlzlnvslgdmdj;Password={supabaseDbPassword};Pooling=true;";
         }
         else
         {
