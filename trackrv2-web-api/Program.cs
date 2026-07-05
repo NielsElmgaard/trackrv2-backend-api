@@ -59,7 +59,9 @@ try
         options.AddPolicy("CorsPolicy", policy =>
         {
             policy.WithOrigins("http://localhost:5173"  // Vite dev server
-            , "https://nielselmgaard.github.io" // github pages
+            , "https://nielselmgaard.github.io",
+                "https://trackr-v2.me",
+                "https://api.trackr-v2.me"
             )
                 .AllowAnyHeader()
                 .AllowAnyMethod()
