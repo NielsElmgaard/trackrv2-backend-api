@@ -27,6 +27,9 @@ jobs:
             # 2. Pull down your fresh git commits straight to the server
             git pull origin main
 
+            # 3. Stop old version to release ports and names
+            docker compose down
+
             # 3. Trigger a clean, native ARM container recompilation layer
             docker compose build --no-cache
 
