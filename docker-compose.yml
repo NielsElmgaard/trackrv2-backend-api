@@ -8,14 +8,18 @@ services:
       - "80:8080"
       - "443:8081"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production # Change to Development when developing
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080;https://+:8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${KESTREL_CERT_PASSWORD}
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/aspnetapp.pfx
       - JwtConfig__Key=${JWT_SECRET_KEY}
       - JwtConfig__Issuer=${JwtConfig__Issuer}
       - JwtConfig__Audience=${JwtConfig__Audience}
       - CONNECTION_STRING=${CONNECTION_STRING}
       - SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD}
       - DOTNET_RUNNING_IN_CONTAINER=true
+    volumes:
+      - /home/ubuntu/app/aspnetapp.pfx:/app/aspnetapp.pfx
     networks:
       - app-network
 
