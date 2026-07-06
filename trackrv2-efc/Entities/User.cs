@@ -33,5 +33,9 @@ public class User : BaseEntity
     public DateTime? RefreshTokenExpiryTime { get; set; }
 
     public List<Tracker> Trackers { get; set; } = new();
+
+    public List<UserFollow> Followers { get; set; } = new(); // The user's followers
+
+    public List<UserFollow> Following { get; set; } = new(); // The users the user is following
 }
 

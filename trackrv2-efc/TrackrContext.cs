@@ -16,6 +16,8 @@ public class TrackrContext : DbContext, IDataProtectionKeyContext
     public DbSet<TrackerEntry> TrackerEntries => Set<TrackerEntry>();
     public DbSet<EntryValue> EntryValues => Set<EntryValue>();
 
+    public DbSet<UserFollow> UserFollows => Set<UserFollow>();
+
     public DbSet<User> Users => Set<User>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys { get; set; } = null!;
@@ -59,6 +61,19 @@ public class TrackrContext : DbContext, IDataProtectionKeyContext
             .HasIndex(t => new { t.Name, t.UserId })
             .IsUnique();
 
+        // Follower
+        modelBuilder.Entity<UserFollow>()
+        .HasOne(uf => uf.Follower)
+        .WithMany(u => u.Following)
+        .HasForeignKey(uf => uf.FollowerId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        // Following
+        modelBuilder.Entity<UserFollow>()
+        .HasOne(uf => uf.Following)
+        .WithMany(u => u.Followers)
+        .HasForeignKey(uf => uf.FollowingId)
+        .OnDelete(DeleteBehavior.Restrict);
 
 
         modelBuilder.Entity<User>()
@@ -66,20 +81,23 @@ public class TrackrContext : DbContext, IDataProtectionKeyContext
         .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<EntryValue>()
-        .Property(u => u.Id)
+        .Property(e => e.Id)
         .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<FieldDefinition>()
-        .Property(u => u.Id)
+        .Property(f => f.Id)
         .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<Tracker>()
-        .Property(u => u.Id)
+        .Property(t => t.Id)
         .HasDefaultValueSql("gen_random_uuid()");
 
         modelBuilder.Entity<TrackerEntry>()
-        .Property(u => u.Id)
+        .Property(t => t.Id)
         .HasDefaultValueSql("gen_random_uuid()");
+
+        // Composite PK
+        modelBuilder.Entity<UserFollow>().HasKey(u => new { u.FollowerId, u.FollowingId });
     }
 
     public override async Task<int> SaveChangesAsync(
