@@ -6,7 +6,7 @@ using trackrv2_web_api.Services.IUserFollowService;
 namespace trackrv2_web_api.Controllers.UserFollow;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class UserFollowsController(IUserFollowService userFollowService) : ControllerBase
 {
