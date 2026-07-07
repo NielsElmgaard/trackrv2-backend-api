@@ -1,11 +1,10 @@
-
 using trackrv2_shared.DTOs;
 
 namespace trackrv2_web_api.Services.IUserFollowService;
 
 public interface IUserFollowService
 {
-    Task<FollowResponse> FollowUser(Guid followerId, Guid followingId);
+    Task<FollowResponse> FollowUserAsync(Guid followerId, Guid followingId);
 
     /// <summary>
     /// Get the users that is following the requested user
@@ -18,14 +17,15 @@ public interface IUserFollowService
     /// <param name="nationality"></param>
     /// <param name="followedAt"></param>
     /// <returns></returns>
-    Task<List<UserFollowerResponse>> GetFollowersForUser(Guid userId,
-    string? userName,
-    string? firstName,
-    string? middleName,
-    string? lastName,
-    string? nationality,
-    DateTime? followedAt);
-
+    Task<List<UserFollowerResponse>> GetFollowersForUserAsync(
+        Guid userId,
+        string? userName,
+        string? firstName,
+        string? middleName,
+        string? lastName,
+        string? nationality,
+        DateTime? followedAt
+    );
 
     /// <summary>
     /// Get the the users that the requested user is following
@@ -38,14 +38,15 @@ public interface IUserFollowService
     /// <param name="nationality"></param>
     /// <param name="followingAt"></param>
     /// <returns></returns>
-    Task<List<UserFollowingResponse>> GetFollowingsForUser(Guid userId,
+    Task<List<UserFollowingResponse>> GetFollowingsForUserAsync(
+        Guid userId,
         string? userName,
         string? firstName,
         string? middleName,
         string? lastName,
         string? nationality,
-        DateTime? followingAt);
-
+        DateTime? followingAt
+    );
 
     /// <summary>
     /// Delete a UserFollow from the the requested user's following list
@@ -53,5 +54,5 @@ public interface IUserFollowService
     /// <param name="followerId"></param>
     /// <param name="followingId"></param>
     /// <returns></returns>
-    Task UnFollowUser(Guid followerId, Guid followingId);
+    Task UnFollowUserAsync(Guid followerId, Guid followingId);
 }

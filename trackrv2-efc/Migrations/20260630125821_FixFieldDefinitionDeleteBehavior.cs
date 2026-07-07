@@ -12,7 +12,8 @@ namespace trackrv2_efc.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_EntryValues_FieldDefinitions_FieldDefinitionId",
-                table: "EntryValues");
+                table: "EntryValues"
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_EntryValues_FieldDefinitions_FieldDefinitionId",
@@ -20,7 +21,8 @@ namespace trackrv2_efc.Migrations
                 column: "FieldDefinitionId",
                 principalTable: "FieldDefinitions",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Cascade
+            );
         }
 
         /// <inheritdoc />
@@ -28,7 +30,8 @@ namespace trackrv2_efc.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_EntryValues_FieldDefinitions_FieldDefinitionId",
-                table: "EntryValues");
+                table: "EntryValues"
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_EntryValues_FieldDefinitions_FieldDefinitionId",
@@ -36,7 +39,8 @@ namespace trackrv2_efc.Migrations
                 column: "FieldDefinitionId",
                 principalTable: "FieldDefinitions",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+                onDelete: ReferentialAction.Restrict
+            );
         }
     }
 }

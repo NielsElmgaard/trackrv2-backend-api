@@ -19,11 +19,12 @@ using trackrv2_web_api.Services.User;
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console()
-    .WriteTo.File("logs/log-.txt",
+    .WriteTo.File(
+        "logs/log-.txt",
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 7,
-        outputTemplate:
-        "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+    )
     .CreateLogger();
 
 try
@@ -56,21 +57,24 @@ try
 
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("CorsPolicy", policy =>
-        {
-            policy.WithOrigins(
-                "http://localhost:5173",            // Vite dev server
-                "https://github.io",
-                "https://trackr-v2.me",
-                "https://www.trackr-v2.me",
-                "https://api.trackr-v2.me"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-        });
+        options.AddPolicy(
+            "CorsPolicy",
+            policy =>
+            {
+                policy
+                    .WithOrigins(
+                        "http://localhost:5173", // Vite dev server
+                        "https://github.io",
+                        "https://trackr-v2.me",
+                        "https://www.trackr-v2.me",
+                        "https://api.trackr-v2.me"
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            }
+        );
     });
-
 
     builder.Host.UseSerilog();
 
@@ -85,29 +89,29 @@ try
         var isDocker = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
         if (isDocker)
         {
-            connectionString = $"Host=aws-0-eu-west-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.fzqputdxlzlnvslgdmdj;Password={supabaseDbPassword};Pooling=true;";
+            connectionString =
+                $"Host=aws-0-eu-west-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.fzqputdxlzlnvslgdmdj;Password={supabaseDbPassword};Pooling=true;";
         }
         else
         {
             //Direct connection for local development (no Docker)
-            connectionString = $"Host=aws-0-eu-west-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.fzqputdxlzlnvslgdmdj;Password={supabaseDbPassword};Pooling=true;";
+            connectionString =
+                $"Host=aws-0-eu-west-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.fzqputdxlzlnvslgdmdj;Password={supabaseDbPassword};Pooling=true;";
         }
     }
 
     // EFC
-    builder.Services.AddDbContext<TrackrContext>(options =>
-        options.UseNpgsql(connectionString));
+    builder.Services.AddDbContext<TrackrContext>(options => options.UseNpgsql(connectionString));
 
-    builder.Services.AddDataProtection()
-        .PersistKeysToDbContext<TrackrContext>();
+    builder.Services.AddDataProtection().PersistKeysToDbContext<TrackrContext>();
 
     // Add services to the container.
 
-    builder.Services.AddControllers()
+    builder
+        .Services.AddControllers()
         .AddJsonOptions(options =>
         {
-            options.JsonSerializerOptions.PropertyNamingPolicy =
-                JsonNamingPolicy.CamelCase;
+            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         });
     builder.Services.AddMemoryCache();
     // builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
@@ -124,37 +128,37 @@ try
         options.QuotaExceededResponse = new QuotaExceededResponse
         {
             ContentType = "application/problem+json",
-            Content = "{{\n  \"title\": \"For mange anmodninger\",\n  \"status\": 429,\n  \"detail\": \"For mange anmodninger på samme tid. Prøv igen om lidt.\"\n}}"
+            Content =
+                "{{\n  \"title\": \"For mange anmodninger\",\n  \"status\": 429,\n  \"detail\": \"For mange anmodninger på samme tid. Prøv igen om lidt.\"\n}}",
         };
-        options.GeneralRules = [
-    new RateLimitRule {
-        Endpoint = "POST:/api/v1/auth/login", // login endpoint
-        Period = "1m",
-        Limit = 5 // 5 request per minute
-    },
-    new RateLimitRule {
-        Endpoint = "POST:/api/v1/users", // register user endpoint
-        Period = "1m",
-        Limit = 3 // 3 request per minute
-    },
-
-    new RateLimitRule {
-        Endpoint = "*", // rate limit for all other endpoints
-        Period = "10s",
-        Limit = 20 // 20 requests per 10 seconds
-    }
-];
+        options.GeneralRules =
+        [
+            new RateLimitRule
+            {
+                Endpoint = "POST:/api/v1/auth/login", // login endpoint
+                Period = "1m",
+                Limit = 5, // 5 request per minute
+            },
+            new RateLimitRule
+            {
+                Endpoint = "POST:/api/v1/users", // register user endpoint
+                Period = "1m",
+                Limit = 3, // 3 request per minute
+            },
+            new RateLimitRule
+            {
+                Endpoint = "*", // rate limit for all other endpoints
+                Period = "10s",
+                Limit = 20, // 20 requests per 10 seconds
+            },
+        ];
     });
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     // builder.Services.AddOpenApi();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
-        options.SwaggerDoc("v1", new OpenApiInfo
-        {
-            Title = "TrackrV2 API",
-            Version = "v1"
-        });
+        options.SwaggerDoc("v1", new OpenApiInfo { Title = "TrackrV2 API", Version = "v1" });
         var jwtSecurityScheme = new OpenApiSecurityScheme
         {
             BearerFormat = "JWT",
@@ -163,29 +167,26 @@ try
             Type = SecuritySchemeType.Http,
             Scheme = JwtBearerDefaults.AuthenticationScheme,
             Description = "Enter your JWT Access Token",
-            Reference = new OpenApiReference
-            {
-                Id = "Bearer",
-                Type = ReferenceType.SecurityScheme
-            }
+            Reference = new OpenApiReference { Id = "Bearer", Type = ReferenceType.SecurityScheme },
         };
         options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
-        options.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
+        options.AddSecurityRequirement(
+            new OpenApiSecurityRequirement
             {
-                new OpenApiSecurityScheme
                 {
-                    Reference = new OpenApiReference
+                    new OpenApiSecurityScheme
                     {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer",
+                        },
+                    },
+                    Array.Empty<string>()
                 },
-                Array.Empty<string>()
             }
-        });
+        );
     });
-
 
     // Web API
     builder.Services.AddScoped<ITrackerService, TrackerService>();
@@ -194,47 +195,47 @@ try
     builder.Services.AddScoped<IUserService, UserService>();
 
     // JWT
-    builder.Services
-        .AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+    builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
     builder.Services.AddScoped<IJwtService, JwtService>();
 
-    builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme =
-            JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    }).AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment(); // TRUE in production
-        options.SaveToken = true;
-        var jwtKey = builder.Configuration["JwtConfig:Key"]
-                     ?? Environment.GetEnvironmentVariable("JwtConfig__Key");
-
-        var rawIssuers = builder.Configuration["JwtConfig:Issuer"] ?? "http://localhost:8080";
-        var rawAudiences = builder.Configuration["JwtConfig:Audience"] ?? "http://localhost:5173";
-
-        var allowedIssuers = rawIssuers.Split(',', StringSplitOptions.RemoveEmptyEntries);
-        var allowedAudiences = rawAudiences.Split(',', StringSplitOptions.RemoveEmptyEntries);
-
-        options.TokenValidationParameters = new TokenValidationParameters
+    builder
+        .Services.AddAuthentication(options =>
         {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!)),
-            ValidateIssuer = true,
-            ValidIssuers = allowedIssuers,
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.RequireHttpsMetadata = !builder.Environment.IsDevelopment(); // TRUE in production
+            options.SaveToken = true;
+            var jwtKey =
+                builder.Configuration["JwtConfig:Key"]
+                ?? Environment.GetEnvironmentVariable("JwtConfig__Key");
 
-            ValidateAudience = true,
-            ValidAudiences = allowedAudiences,
+            var rawIssuers = builder.Configuration["JwtConfig:Issuer"] ?? "http://localhost:8080";
+            var rawAudiences =
+                builder.Configuration["JwtConfig:Audience"] ?? "http://localhost:5173";
 
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero,
-            NameClaimType = "name",
-            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-        };
-    });
+            var allowedIssuers = rawIssuers.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            var allowedAudiences = rawAudiences.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!)),
+                ValidateIssuer = true,
+                ValidIssuers = allowedIssuers,
 
+                ValidateAudience = true,
+                ValidAudiences = allowedAudiences,
+
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+                NameClaimType = "name",
+                RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+            };
+        });
 
     // Error Handling
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -247,15 +248,13 @@ try
     });
     var app = builder.Build();
 
-
     // Database migration at startup
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
         try
         {
-            var context =
-                services.GetRequiredService<TrackrContext>();
+            var context = services.GetRequiredService<TrackrContext>();
 
             context.Database.Migrate();
 
@@ -263,17 +262,14 @@ try
         }
         catch (Exception ex)
         {
-            Log.Error(ex,
-                "Der skete en fejl under oprettelse/opdatering af databasen.");
+            Log.Error(ex, "Der skete en fejl under oprettelse/opdatering af databasen.");
         }
     }
-
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         // app.UseHttpsRedirection(); // Uncomment in local production
-
     }
     app.UseExceptionHandler();
     //app.MapOpenApi();

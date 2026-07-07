@@ -8,14 +8,16 @@ namespace trackrv2_web_api.Controllers.Tracker;
 [ApiController]
 [Route("api/v1/[controller]")]
 [Authorize(Policy = "UserOnly")]
-
 public class TrackersController(ITrackerService trackerService) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<TrackerDetailedResponse>> CreateTrackerAsync([FromBody]
-        TrackerRequest request)
+    public async Task<ActionResult<TrackerDetailedResponse>> CreateTrackerAsync(
+        [FromBody] TrackerRequest request
+    )
     {
-        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userIdStr = User.FindFirst(
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        )?.Value;
         var userId = Guid.Parse(userIdStr!);
 
         var result = await trackerService.CreateTrackerAsync(userId, request);
@@ -23,11 +25,12 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
         return CreatedAtRoute("GetTrackerById", new { trackerId = result.Id }, result);
     }
 
-
     [HttpDelete("{trackerId:Guid}")]
     public async Task<ActionResult> DeleteTrackerAsync([FromRoute] Guid trackerId)
     {
-        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userIdStr = User.FindFirst(
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        )?.Value;
         var userId = Guid.Parse(userIdStr!);
 
         await trackerService.DeleteTrackerAsync(trackerId, userId);
@@ -36,10 +39,13 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
     }
 
     [HttpGet("{trackerId:Guid}", Name = "GetTrackerById")]
-    public async Task<ActionResult<TrackerDetailedResponse>>
-    GetTrackerByIdAsync([FromRoute] Guid trackerId)
+    public async Task<ActionResult<TrackerDetailedResponse>> GetTrackerByIdAsync(
+        [FromRoute] Guid trackerId
+    )
     {
-        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userIdStr = User.FindFirst(
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        )?.Value;
         var userId = Guid.Parse(userIdStr!);
 
         var result = await trackerService.GetTrackerByIdAsync(trackerId, userId);
@@ -48,9 +54,14 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
     }
 
     [HttpPut("{trackerId:Guid}")]
-    public async Task<ActionResult> UpdateTrackerAsync([FromRoute] Guid trackerId, [FromBody] TrackerRequest request)
+    public async Task<ActionResult> UpdateTrackerAsync(
+        [FromRoute] Guid trackerId,
+        [FromBody] TrackerRequest request
+    )
     {
-        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userIdStr = User.FindFirst(
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        )?.Value;
         var userId = Guid.Parse(userIdStr!);
 
         await trackerService.UpdateTrackerAsync(trackerId, userId, request);
@@ -58,16 +69,24 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
         return NoContent();
     }
 
-
     [HttpGet]
-    public async Task<ActionResult<TrackerOverviewResponse>>
-GetTrackersByUserAsync([FromQuery] string? name, [FromQuery] DateTime? createdAt,
-[FromQuery] DateTime? lastUpdated)
+    public async Task<ActionResult<TrackerOverviewResponse>> GetTrackersByUserAsync(
+        [FromQuery] string? name,
+        [FromQuery] DateTime? createdAt,
+        [FromQuery] DateTime? lastUpdated
+    )
     {
-        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userIdStr = User.FindFirst(
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        )?.Value;
         var userId = Guid.Parse(userIdStr!);
 
-        var result = await trackerService.GetTrackersByUserAsync(userId, name, createdAt, lastUpdated);
+        var result = await trackerService.GetTrackersByUserAsync(
+            userId,
+            name,
+            createdAt,
+            lastUpdated
+        );
 
         return Ok(result);
     }

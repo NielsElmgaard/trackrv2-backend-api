@@ -1,31 +1,34 @@
-# C# / .NET
+# C# / .NET Build Artifacts
 bin/
 obj/
-*.user
-*.suo
-.vs/
 publish/
 *.zip
 /packages/
-riderModule.iml
-/_ReSharper.Caches/
 
-# Node / React
-node_modules/
-dist/
-build/
-
-# Docker
-docker-compose.override.yml
-
-# IDE
+# User-Specific IDE Settings & Caches
+*.user
+*.suo
+.vs/
 .idea/
 .vscode/
+/_ReSharper.Caches/
+riderModule.iml
 
-# OS
+# Local Data & Databases
+App_Data/
+*.db
+*.database
+
+# Docker Configuration
+docker-compose.override.yml
+
+# Environment Variables & Sensitive Data
+.env
+.env.*
+!.env.example
+*.txt
+
+# Operating System Files & Logs
 .DS_Store
 Thumbs.db
-
-# ENV
-.env
-*.txt
+*.log

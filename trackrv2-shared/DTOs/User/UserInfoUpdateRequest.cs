@@ -7,4 +7,5 @@ public record UserInfoUpdateRequest(
     string LastName,
     string? Nationality,
     string Email,
-    long PhoneNumber);
+    long PhoneNumber
+);

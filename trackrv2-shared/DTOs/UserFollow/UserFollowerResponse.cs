@@ -1,7 +1,6 @@
 namespace trackrv2_shared.DTOs;
 
-public record UserFollowerResponse
-(
+public record UserFollowerResponse(
     string Username,
     string FirstName,
     string? MiddleName,

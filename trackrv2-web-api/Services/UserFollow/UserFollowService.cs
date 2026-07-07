@@ -12,16 +12,17 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
     private readonly IMemoryCache _cache = cache;
 
     private const string UserCachePrefix = "user_";
-    public async Task<FollowResponse> FollowUser(Guid followerId, Guid followingId)
-    {
 
+    public async Task<FollowResponse> FollowUserAsync(Guid followerId, Guid followingId)
+    {
         if (followerId == followingId)
         {
             throw new InvalidOperationException($"Du kan ikke følge dig selv.");
         }
 
-        var alreadyFollowing = await _ctx.UserFollows.AnyAsync(uf => uf.FollowerId == followerId && uf.FollowingId == followingId);
-
+        var alreadyFollowing = await _ctx.UserFollows.AnyAsync(uf =>
+            uf.FollowerId == followerId && uf.FollowingId == followingId
+        );
 
         if (alreadyFollowing)
         {
@@ -36,11 +37,7 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
             throw new KeyNotFoundException("En eller begge brugere findes ikke.");
         }
 
-        var userFollow = new UserFollow
-        {
-            FollowerId = followerId,
-            FollowingId = followingId
-        };
+        var userFollow = new UserFollow { FollowerId = followerId, FollowingId = followingId };
 
         await _ctx.UserFollows.AddAsync(userFollow);
         await _ctx.SaveChangesAsync();
@@ -48,18 +45,18 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
         _cache.Remove($"{UserCachePrefix}{followerId}");
         _cache.Remove($"{UserCachePrefix}{followingId}");
 
-        return new FollowResponse(followerUser.Username,
-        followedUser.Username);
+        return new FollowResponse(followerUser.Username, followedUser.Username);
     }
 
-
-    public async Task<List<UserFollowerResponse>> GetFollowersForUser(Guid userId,
-    string? userName,
-    string? firstName,
-    string? middleName,
-    string? lastName,
-    string? nationality,
-    DateTime? followedAt)
+    public async Task<List<UserFollowerResponse>> GetFollowersForUserAsync(
+        Guid userId,
+        string? userName,
+        string? firstName,
+        string? middleName,
+        string? lastName,
+        string? nationality,
+        DateTime? followedAt
+    )
     {
         var userExists = await _ctx.Users.AnyAsync(u => u.Id == userId);
         if (!userExists)
@@ -67,19 +64,37 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
             throw new KeyNotFoundException($"Brugeren blev ikke fundet");
         }
 
-        var followers = await GetManyFollowers(userId, userName, firstName, middleName, lastName, nationality, followedAt);
+        var followers = await GetManyFollowersAsync(
+            userId,
+            userName,
+            firstName,
+            middleName,
+            lastName,
+            nationality,
+            followedAt
+        );
 
-        return followers.Select(follower => new UserFollowerResponse(
-                    follower.Follower.Username,
-                    follower.Follower.FirstName,
-                    follower.Follower.MiddleName,
-                    follower.Follower.LastName,
-                    follower.Follower.Nationality,
-                    follower.FollowedAt
-                )).ToList();
+        return followers
+            .Select(follower => new UserFollowerResponse(
+                follower.Follower.Username,
+                follower.Follower.FirstName,
+                follower.Follower.MiddleName,
+                follower.Follower.LastName,
+                follower.Follower.Nationality,
+                follower.FollowedAt
+            ))
+            .ToList();
     }
 
-    public async Task<List<UserFollowingResponse>> GetFollowingsForUser(Guid userId, string? userName, string? firstName, string? middleName, string? lastName, string? nationality, DateTime? followingAt)
+    public async Task<List<UserFollowingResponse>> GetFollowingsForUserAsync(
+        Guid userId,
+        string? userName,
+        string? firstName,
+        string? middleName,
+        string? lastName,
+        string? nationality,
+        DateTime? followingAt
+    )
     {
         var userExists = await _ctx.Users.AnyAsync(u => u.Id == userId);
         if (!userExists)
@@ -87,32 +102,44 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
             throw new KeyNotFoundException($"Brugeren blev ikke fundet");
         }
 
-        var followings = await GetManyFollowings(userId, userName, firstName, middleName, lastName, nationality, followingAt);
+        var followings = await GetManyFollowingsAsync(
+            userId,
+            userName,
+            firstName,
+            middleName,
+            lastName,
+            nationality,
+            followingAt
+        );
 
-        return followings.Select(following => new UserFollowingResponse(
-                    following.Following.Username,
-                    following.Following.FirstName,
-                    following.Following.MiddleName,
-                    following.Following.LastName,
-                    following.Following.Nationality,
-                    following.FollowedAt
-                )).ToList();
+        return followings
+            .Select(following => new UserFollowingResponse(
+                following.Following.Username,
+                following.Following.FirstName,
+                following.Following.MiddleName,
+                following.Following.LastName,
+                following.Following.Nationality,
+                following.FollowedAt
+            ))
+            .ToList();
     }
 
-
-    public async Task UnFollowUser(Guid followerId, Guid followingId)
+    public async Task UnFollowUserAsync(Guid followerId, Guid followingId)
     {
         if (followerId == followingId)
         {
             throw new InvalidOperationException($"Du kan ikke stoppe med at følge dig selv.");
         }
 
-        var followingUser = await _ctx.UserFollows.FirstOrDefaultAsync(uf => uf.FollowerId == followerId && uf.FollowingId == followingId);
-
+        var followingUser = await _ctx.UserFollows.FirstOrDefaultAsync(uf =>
+            uf.FollowerId == followerId && uf.FollowingId == followingId
+        );
 
         if (followingUser == null)
         {
-            throw new InvalidOperationException($"Du følger ikke denne bruger og kan derfor ikke stoppe med at følge vedkommende.");
+            throw new InvalidOperationException(
+                $"Du følger ikke denne bruger og kan derfor ikke stoppe med at følge vedkommende."
+            );
         }
 
         _ctx.UserFollows.Remove(followingUser);
@@ -122,16 +149,20 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
         _cache.Remove($"{UserCachePrefix}{followingId}");
     }
 
-    private async Task<List<UserFollow>> GetManyFollowers(
-       Guid userId,
-       string? userName,
-       string? firstName,
-       string? middleName,
-       string? lastName,
-       string? nationality,
-       DateTime? followedAt)
+    private async Task<List<UserFollow>> GetManyFollowersAsync(
+        Guid userId,
+        string? userName,
+        string? firstName,
+        string? middleName,
+        string? lastName,
+        string? nationality,
+        DateTime? followedAt
+    )
     {
-        var query = _ctx.UserFollows.AsNoTracking().Include(uf => uf.Follower).Where(u => u.FollowingId == userId);
+        var query = _ctx
+            .UserFollows.AsNoTracking()
+            .Include(uf => uf.Follower)
+            .Where(u => u.FollowingId == userId);
 
         if (!string.IsNullOrWhiteSpace(userName))
         {
@@ -143,7 +174,10 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
         }
         if (!string.IsNullOrWhiteSpace(middleName))
         {
-            query = query.Where(uf => uf.Follower.MiddleName != null && EF.Functions.ILike(uf.Follower.MiddleName, middleName));
+            query = query.Where(uf =>
+                uf.Follower.MiddleName != null
+                && EF.Functions.ILike(uf.Follower.MiddleName, middleName)
+            );
         }
         if (!string.IsNullOrWhiteSpace(lastName))
         {
@@ -151,7 +185,10 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
         }
         if (!string.IsNullOrWhiteSpace(nationality))
         {
-            query = query.Where(uf => uf.Follower.Nationality != null && EF.Functions.ILike(uf.Follower.Nationality, nationality));
+            query = query.Where(uf =>
+                uf.Follower.Nationality != null
+                && EF.Functions.ILike(uf.Follower.Nationality, nationality)
+            );
         }
 
         if (followedAt.HasValue)
@@ -164,16 +201,20 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
         return await query.ToListAsync();
     }
 
-    private async Task<List<UserFollow>> GetManyFollowings(
+    private async Task<List<UserFollow>> GetManyFollowingsAsync(
         Guid userId,
         string? userName,
         string? firstName,
         string? middleName,
         string? lastName,
         string? nationality,
-        DateTime? followingAt)
+        DateTime? followingAt
+    )
     {
-        var query = _ctx.UserFollows.AsNoTracking().Include(uf => uf.Following).Where(u => u.FollowerId == userId);
+        var query = _ctx
+            .UserFollows.AsNoTracking()
+            .Include(uf => uf.Following)
+            .Where(u => u.FollowerId == userId);
 
         if (!string.IsNullOrWhiteSpace(userName))
         {
@@ -185,7 +226,10 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
         }
         if (!string.IsNullOrWhiteSpace(middleName))
         {
-            query = query.Where(uf => uf.Following.MiddleName != null && EF.Functions.ILike(uf.Following.MiddleName, middleName));
+            query = query.Where(uf =>
+                uf.Following.MiddleName != null
+                && EF.Functions.ILike(uf.Following.MiddleName, middleName)
+            );
         }
         if (!string.IsNullOrWhiteSpace(lastName))
         {
@@ -193,7 +237,10 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
         }
         if (!string.IsNullOrWhiteSpace(nationality))
         {
-            query = query.Where(uf => uf.Following.Nationality != null && EF.Functions.ILike(uf.Following.Nationality, nationality));
+            query = query.Where(uf =>
+                uf.Following.Nationality != null
+                && EF.Functions.ILike(uf.Following.Nationality, nationality)
+            );
         }
 
         if (followingAt.HasValue)
@@ -205,5 +252,4 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
 
         return await query.ToListAsync();
     }
-
 }

@@ -8,5 +8,4 @@ public class UserFollow
     public User Following { get; set; } = null!; // The user that is being followed
     public Guid FollowingId { get; set; }
     public DateTime FollowedAt { get; set; } = DateTime.UtcNow;
-
 }

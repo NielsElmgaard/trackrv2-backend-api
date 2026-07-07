@@ -3,7 +3,7 @@
 public record UserProfileResponse(
     Guid Id,
     string Username,
-   string FirstName,
+    string FirstName,
     string MiddleName,
     string LastName,
     string Email,
