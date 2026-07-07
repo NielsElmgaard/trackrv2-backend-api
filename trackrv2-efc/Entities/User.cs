@@ -36,6 +36,6 @@ public class User : BaseEntity
 
     public List<UserFollow> Followers { get; set; } = new(); // The user's followers
 
-    public List<UserFollow> Following { get; set; } = new(); // The users the user is following
+    public List<UserFollow> Followings { get; set; } = new(); // The users the user is following
 }
 

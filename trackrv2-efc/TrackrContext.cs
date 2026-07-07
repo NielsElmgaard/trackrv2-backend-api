@@ -64,7 +64,7 @@ public class TrackrContext : DbContext, IDataProtectionKeyContext
         // Follower
         modelBuilder.Entity<UserFollow>()
         .HasOne(uf => uf.Follower)
-        .WithMany(u => u.Following)
+        .WithMany(u => u.Followings)
         .HasForeignKey(uf => uf.FollowerId)
         .OnDelete(DeleteBehavior.Restrict);
 

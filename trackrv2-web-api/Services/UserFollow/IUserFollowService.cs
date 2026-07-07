@@ -7,6 +7,17 @@ public interface IUserFollowService
 {
     Task<FollowResponse> FollowUser(Guid followerId, Guid followingId);
 
+    /// <summary>
+    /// Get the users that is following the requested user
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="userName"></param>
+    /// <param name="firstName"></param>
+    /// <param name="middleName"></param>
+    /// <param name="lastName"></param>
+    /// <param name="nationality"></param>
+    /// <param name="followedAt"></param>
+    /// <returns></returns>
     Task<List<UserFollowerResponse>> GetFollowersForUser(Guid userId,
     string? userName,
     string? firstName,
@@ -15,5 +26,32 @@ public interface IUserFollowService
     string? nationality,
     DateTime? followedAt);
 
+
+    /// <summary>
+    /// Get the the users that the requested user is following
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="userName"></param>
+    /// <param name="firstName"></param>
+    /// <param name="middleName"></param>
+    /// <param name="lastName"></param>
+    /// <param name="nationality"></param>
+    /// <param name="followingAt"></param>
+    /// <returns></returns>
+    Task<List<UserFollowingResponse>> GetFollowingsForUser(Guid userId,
+        string? userName,
+        string? firstName,
+        string? middleName,
+        string? lastName,
+        string? nationality,
+        DateTime? followingAt);
+
+
+    /// <summary>
+    /// Delete a UserFollow from the the requested user's following list
+    /// </summary>
+    /// <param name="followerId"></param>
+    /// <param name="followingId"></param>
+    /// <returns></returns>
     Task UnFollowUser(Guid followerId, Guid followingId);
 }
