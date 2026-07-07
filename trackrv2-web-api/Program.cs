@@ -12,6 +12,7 @@ using trackrv2_efc;
 using trackrv2_efc.Entities;
 using trackrv2_efc.Middleware;
 using trackrv2_web_api.Services.Auth;
+using trackrv2_web_api.Services.IUserFollowService;
 using trackrv2_web_api.Services.TrackerEntryService;
 using trackrv2_web_api.Services.TrackerService;
 using trackrv2_web_api.Services.User;
@@ -193,6 +194,7 @@ try
     builder.Services.AddScoped<ITrackerEntryService, TrackerEntryService>();
     builder.Services.AddScoped<ILoginService, LoginService>();
     builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IUserFollowService, UserFollowService>();
 
     // JWT
     builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
