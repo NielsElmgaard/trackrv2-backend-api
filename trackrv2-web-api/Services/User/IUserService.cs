@@ -15,6 +15,14 @@ public interface IUserService
 
     Task UpdateUserRolesAsync(Guid id, UpdateUserRolesRequest request);
 
+    Task<List<SearchUserResponse>> GetSearchUsersAsync(
+        string? username,
+        string? firstName,
+        string? middleName,
+        string? lastName,
+        string? nationality
+    );
+
     // Admin role required
     Task<UserProfileResponse> GetUserByIdAsync(Guid id);
 

@@ -164,6 +164,37 @@ public class UserService : IUserService
         _cache.Remove(cacheKey);
     }
 
+    public async Task<List<SearchUserResponse>> GetSearchUsersAsync(
+        string? username,
+        string? firstName,
+        string? middleName,
+        string? lastName,
+        string? nationality
+    )
+    {
+        var users = await GetManySearchUsers(
+            username,
+            firstName,
+            middleName,
+            lastName,
+            nationality
+        );
+
+        return users
+            .Select(user =>
+            {
+                return new SearchUserResponse(
+                    user.Id,
+                    user.Username,
+                    user.FirstName,
+                    user.MiddleName!,
+                    user.LastName,
+                    user.Nationality
+                );
+            })
+            .ToList();
+    }
+
     public async Task DeleteUserAsync(Guid id)
     {
         var existingUser = await _ctx.Users.FindAsync(id);
@@ -445,6 +476,47 @@ public class UserService : IUserService
             DateTime startDate = lastUpdated.Value.Date;
             DateTime endDate = startDate.AddDays(1);
             query = query.Where(u => u.LastUpdated >= startDate && u.LastUpdated < endDate);
+        }
+
+        return await query.ToListAsync();
+    }
+
+    // Search for users helper method
+    private async Task<List<trackrv2_efc.Entities.User>> GetManySearchUsers(
+        string? username,
+        string? firstName,
+        string? middleName,
+        string? lastName,
+        string? nationality
+    )
+    {
+        var query = _ctx.Users.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(username))
+        {
+            query = query.Where(u => EF.Functions.ILike(u.Username, username));
+        }
+
+        if (!string.IsNullOrWhiteSpace(firstName))
+        {
+            query = query.Where(u => EF.Functions.ILike(u.FirstName, firstName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(middleName))
+        {
+            query = query.Where(u => EF.Functions.ILike(u.MiddleName!, middleName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(lastName))
+        {
+            query = query.Where(u => EF.Functions.ILike(u.LastName, lastName));
+        }
+
+        if (!string.IsNullOrWhiteSpace(nationality))
+        {
+            query = query.Where(u =>
+                u.Nationality != null && EF.Functions.ILike(u.Nationality, nationality)
+            );
         }
 
         return await query.ToListAsync();

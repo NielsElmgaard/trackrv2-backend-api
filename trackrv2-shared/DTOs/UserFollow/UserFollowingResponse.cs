@@ -1,6 +1,7 @@
 namespace trackrv2_shared.DTOs;
 
 public record UserFollowingResponse(
+    Guid Id,
     string Username,
     string FirstName,
     string? MiddleName,

@@ -76,6 +76,7 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
 
         return followers
             .Select(follower => new UserFollowerResponse(
+                follower.Follower.Id,
                 follower.Follower.Username,
                 follower.Follower.FirstName,
                 follower.Follower.MiddleName,
@@ -114,6 +115,7 @@ public class UserFollowService(TrackrContext ctx, IMemoryCache cache) : IUserFol
 
         return followings
             .Select(following => new UserFollowingResponse(
+                following.Following.Id,
                 following.Following.Username,
                 following.Following.FirstName,
                 following.Following.MiddleName,

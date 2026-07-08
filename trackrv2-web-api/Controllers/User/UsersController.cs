@@ -97,6 +97,26 @@ public class UsersController(IUserService userService) : ControllerBase
         return Ok(result);
     }
 
+    [Authorize]
+    [HttpGet("search-users")]
+    public async Task<ActionResult<SearchUserResponse>> GetSearchUsers(
+        [FromQuery] string? username,
+        [FromQuery] string? firstName,
+        [FromQuery] string? middleName,
+        [FromQuery] string? lastName,
+        [FromQuery] string? nationality
+    )
+    {
+        var user = await userService.GetSearchUsersAsync(
+            username,
+            firstName,
+            middleName,
+            lastName,
+            nationality
+        );
+        return Ok(user);
+    }
+
     [Authorize(Policy = "AdminOnly")]
     [HttpGet("{id:Guid}")]
     public async Task<ActionResult<UserProfileResponse>> GetSingleUserByIdAsAdminAsync(
