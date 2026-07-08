@@ -187,7 +187,8 @@ public class JwtService : IJwtService
     )
     {
         var rawIssuer = _configuration["JwtConfig:Issuer"] ?? "http://localhost:8080";
-        var rawAudience = _configuration["JwtConfig:Audience"] ?? "http://localhost:5173";
+        var rawAudience =
+            _configuration["JwtConfig:Audience"] ?? "http://localhost:5173,http://localhost:4173";
         var key = _configuration["JwtConfig:Key"];
         var tokenValidityMins = _configuration.GetValue<int>("JwtConfig:TokenValidityMins", 15);
 

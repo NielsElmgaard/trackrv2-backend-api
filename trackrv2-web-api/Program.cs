@@ -65,6 +65,7 @@ try
                 policy
                     .WithOrigins(
                         "http://localhost:5173", // Vite dev server
+                        "http://localhost:4173", // Vite preview server
                         "https://github.io",
                         "https://trackr-v2.me",
                         "https://www.trackr-v2.me",
@@ -217,7 +218,8 @@ try
 
             var rawIssuers = builder.Configuration["JwtConfig:Issuer"] ?? "http://localhost:8080";
             var rawAudiences =
-                builder.Configuration["JwtConfig:Audience"] ?? "http://localhost:5173";
+                builder.Configuration["JwtConfig:Audience"]
+                ?? "http://localhost:5173,http://localhost:4173";
 
             var allowedIssuers = rawIssuers.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var allowedAudiences = rawAudiences.Split(',', StringSplitOptions.RemoveEmptyEntries);
