@@ -280,6 +280,7 @@ public class UserService : IUserService
                         user.Trackers.Select(t => new TrackerOverviewResponse(
                             t.Id,
                             t.Name,
+                            t.Description!,
                             t.CreatedAt,
                             t.LastUpdated
                         ))
@@ -345,6 +346,7 @@ public class UserService : IUserService
             user.Trackers.Select(t => new TrackerOverviewResponse(
                 t.Id,
                 t.Name,
+                t.Description!,
                 t.CreatedAt,
                 t.LastUpdated
             ))

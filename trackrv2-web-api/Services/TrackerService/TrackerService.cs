@@ -38,6 +38,7 @@ public class TrackerService : ITrackerService
         var tracker = new Tracker
         {
             Name = request.Name,
+            Description = request.Description,
             UserId = userId,
             Fields = request
                 .Fields.Select(f => new FieldDefinition { Label = f.Label, Type = f.Type })
@@ -53,6 +54,7 @@ public class TrackerService : ITrackerService
         return new TrackerDetailedResponse(
             addedTrackerEntity.Id,
             addedTrackerEntity.Name,
+            addedTrackerEntity.Description!,
             addedTrackerEntity.UserId,
             addedTrackerEntity.CreatedAt,
             addedTrackerEntity.LastUpdated,
@@ -115,6 +117,7 @@ public class TrackerService : ITrackerService
                     return new TrackerDetailedResponse(
                         tracker.Id,
                         tracker.Name,
+                        tracker.Description!,
                         tracker.UserId,
                         tracker.CreatedAt,
                         tracker.LastUpdated,
@@ -157,6 +160,8 @@ public class TrackerService : ITrackerService
 
             existingTrackerForUser.Name = request.Name;
         }
+
+        existingTrackerForUser.Description = request.Description;
 
         // All existing fields
         var requestFieldIds = request
@@ -243,6 +248,7 @@ public class TrackerService : ITrackerService
                 return new TrackerOverviewResponse(
                     tracker.Id,
                     tracker.Name,
+                    tracker.Description!,
                     tracker.CreatedAt,
                     tracker.LastUpdated
                 );
