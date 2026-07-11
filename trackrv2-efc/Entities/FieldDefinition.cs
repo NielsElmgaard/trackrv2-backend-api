@@ -5,6 +5,8 @@ namespace trackrv2_efc.Entities;
 public class FieldDefinition : BaseEntity
 {
     public required string Label { get; set; }
+
+    public string? Description { get; set; }
     public FieldType Type { get; set; }
 
     public Guid TrackerId { get; set; }

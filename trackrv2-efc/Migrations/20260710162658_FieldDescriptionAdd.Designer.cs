@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using trackrv2_efc;
@@ -11,9 +12,11 @@ using trackrv2_efc;
 namespace trackrv2_efc.Migrations
 {
     [DbContext(typeof(TrackrContext))]
-    partial class TrackrContextModelSnapshot : ModelSnapshot
+    [Migration("20260710162658_FieldDescriptionAdd")]
+    partial class FieldDescriptionAdd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -60,6 +60,7 @@ public class TrackerService : ITrackerService
                 .Fields.Select(f => new FieldDefinitionResponse(
                     f.Id,
                     f.Label,
+                    f.Description!,
                     f.Type,
                     f.CreatedAt,
                     f.LastUpdated
@@ -121,6 +122,7 @@ public class TrackerService : ITrackerService
                             .Fields.Select(f => new FieldDefinitionResponse(
                                 f.Id,
                                 f.Label,
+                                f.Description!,
                                 f.Type,
                                 f.CreatedAt,
                                 f.LastUpdated
@@ -177,7 +179,12 @@ public class TrackerService : ITrackerService
             if (fieldRequest.Id == Guid.Empty)
             {
                 existingTrackerForUser.Fields.Add(
-                    new FieldDefinition { Label = fieldRequest.Label, Type = fieldRequest.Type }
+                    new FieldDefinition
+                    {
+                        Label = fieldRequest.Label,
+                        Description = fieldRequest.Description,
+                        Type = fieldRequest.Type,
+                    }
                 );
             }
             else
@@ -189,6 +196,7 @@ public class TrackerService : ITrackerService
                 if (existingField != null)
                 {
                     existingField.Label = fieldRequest.Label;
+                    existingField.Description = fieldRequest.Description;
 
                     if (existingField.Type != fieldRequest.Type)
                     {
