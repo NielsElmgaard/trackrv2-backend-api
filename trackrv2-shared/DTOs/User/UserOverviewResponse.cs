@@ -12,4 +12,4 @@ public record UserOverviewResponse(
     Role Role,
     DateTime CreatedAt,
     DateTime LastUpdated
-    );
+);

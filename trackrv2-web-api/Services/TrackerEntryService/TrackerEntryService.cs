@@ -20,35 +20,44 @@ public class TrackerEntryService : ITrackerEntryService
         _cache = cache;
     }
 
-    public async Task<TrackerEntryResponse> CreateTrackerEntryAsync(Guid trackerId, Guid userId, TrackerEntryRequest request)
+    public async Task<TrackerEntryResponse> CreateTrackerEntryAsync(
+        Guid trackerId,
+        Guid userId,
+        TrackerEntryRequest request
+    )
     {
-        var trackerExists = await _ctx.Trackers
-           .AnyAsync(t => t.Id == trackerId && t.UserId == userId);
+        var trackerExists = await _ctx.Trackers.AnyAsync(t =>
+            t.Id == trackerId && t.UserId == userId
+        );
 
         if (!trackerExists)
         {
-            throw new KeyNotFoundException($"Tracker med id'et '{trackerId}' for brugeren med id'et '{userId}' blev ikke fundet.");
+            throw new KeyNotFoundException(
+                $"Tracker med id'et '{trackerId}' for brugeren med id'et '{userId}' blev ikke fundet."
+            );
         }
 
         var trackerEntry = new TrackerEntry
         {
             TrackerId = trackerId,
-            Values = request.Values.Select(ev => new EntryValue
-            {
-                Value = ev.Value,
-                FieldDefinitionId = ev.FieldDefinitionId,
-            }).ToList()
+            Values = request
+                .Values.Select(ev => new EntryValue
+                {
+                    Value = ev.Value,
+                    FieldDefinitionId = ev.FieldDefinitionId,
+                })
+                .ToList(),
         };
 
         var addedTrackerEntry = await _ctx.TrackerEntries.AddAsync(trackerEntry);
         await _ctx.SaveChangesAsync();
         var addedTrackerEntryEntity = addedTrackerEntry.Entity;
 
-        var savedTrackerEntryWithFields = await _ctx.TrackerEntries
-        .AsNoTracking()
-        .Include(te => te.Values)
-        .ThenInclude(ev => ev.FieldDefinition)
-        .FirstAsync(te => te.Id == trackerEntry.Id);
+        var savedTrackerEntryWithFields = await _ctx
+            .TrackerEntries.AsNoTracking()
+            .Include(te => te.Values)
+                .ThenInclude(ev => ev.FieldDefinition)
+            .FirstAsync(te => te.Id == trackerEntry.Id);
 
         string userCacheKey = $"{UserCachePrefix}{userId}";
         _cache.Remove(userCacheKey);
@@ -60,31 +69,37 @@ public class TrackerEntryService : ITrackerEntryService
         return new TrackerEntryResponse(
             savedTrackerEntryWithFields.Id,
             savedTrackerEntryWithFields.TrackerId,
-            savedTrackerEntryWithFields.Values
-            .Select(ev => new EntryValueResponse(
-                ev.Id,
-                ev.FieldDefinitionId,
-                ev.FieldDefinition.Label,
-                ev.FieldDefinition.Type,
-                ev.Value,
-                ev.CreatedAt,
-                ev.LastUpdated
-            )).ToList(),
+            savedTrackerEntryWithFields
+                .Values.Select(ev => new EntryValueResponse(
+                    ev.Id,
+                    ev.FieldDefinitionId,
+                    ev.FieldDefinition.Label,
+                    ev.FieldDefinition.Description!,
+                    ev.FieldDefinition.Type,
+                    ev.Value,
+                    ev.CreatedAt,
+                    ev.LastUpdated
+                ))
+                .ToList(),
             savedTrackerEntryWithFields.CreatedAt,
-            savedTrackerEntryWithFields.LastUpdated);
+            savedTrackerEntryWithFields.LastUpdated
+        );
     }
 
     public async Task DeleteTrackerEntryAsync(Guid trackerEntryId, Guid userId)
     {
-        var existingTrackerEntryForUser = await _ctx.TrackerEntries
-               .FirstOrDefaultAsync(te => te.Id == trackerEntryId && te.Tracker.UserId == userId);
+        var existingTrackerEntryForUser = await _ctx.TrackerEntries.FirstOrDefaultAsync(te =>
+            te.Id == trackerEntryId && te.Tracker.UserId == userId
+        );
 
         if (existingTrackerEntryForUser == null)
         {
-            var existingUser = await _ctx.Users
-                .AsNoTracking()
+            var existingUser = await _ctx
+                .Users.AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == userId);
-            throw new KeyNotFoundException($"Tracker Entry'en med id'et '{trackerEntryId}' og brugeren '{existingUser?.Username}' blev ikke fundet");
+            throw new KeyNotFoundException(
+                $"Tracker Entry'en med id'et '{trackerEntryId}' og brugeren '{existingUser?.Username}' blev ikke fundet"
+            );
         }
 
         _ctx.TrackerEntries.Remove(existingTrackerEntryForUser);
@@ -97,84 +112,108 @@ public class TrackerEntryService : ITrackerEntryService
         _cache.Remove(userCacheKey);
     }
 
-    public async Task<List<TrackerEntryResponse>> GetTrackerEntriesForTrackerAsync(Guid trackerId, Guid userId, DateTime? fromCreatedAtDate, DateTime? toCreatedAtDate)
+    public async Task<List<TrackerEntryResponse>> GetTrackerEntriesForTrackerAsync(
+        Guid trackerId,
+        Guid userId,
+        DateTime? fromCreatedAtDate,
+        DateTime? toCreatedAtDate
+    )
     {
-        var trackerExists = await _ctx.Trackers.AnyAsync(t => t.Id == trackerId && t.UserId == userId);
+        var trackerExists = await _ctx.Trackers.AnyAsync(t =>
+            t.Id == trackerId && t.UserId == userId
+        );
         if (!trackerExists)
         {
-            var existingUser = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-            throw new KeyNotFoundException($"Brugeren '{existingUser?.Username}' og trackeren med id'et '{trackerId}' blev ikke fundet eller matcher ikke.");
+            var existingUser = await _ctx
+                .Users.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == userId);
+            throw new KeyNotFoundException(
+                $"Brugeren '{existingUser?.Username}' og trackeren med id'et '{trackerId}' blev ikke fundet eller matcher ikke."
+            );
         }
 
         string cacheKey = $"{TrackerEntryCachePrefix}{trackerId}";
 
-        return (await _cache.GetOrCreateAsync(cacheKey, async entry =>
-         {
-             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+        return (
+            await _cache.GetOrCreateAsync(
+                cacheKey,
+                async entry =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
 
-             var query = _ctx.TrackerEntries
-            .AsNoTracking()
-            .Include(t => t.Tracker)
-            .Where(te => te.TrackerId == trackerId && te.Tracker.UserId == userId)
-            .Include(te => te.Values)
-            .ThenInclude(ve => ve.FieldDefinition)
-            .AsQueryable();
+                    var query = _ctx
+                        .TrackerEntries.AsNoTracking()
+                        .Include(t => t.Tracker)
+                        .Where(te => te.TrackerId == trackerId && te.Tracker.UserId == userId)
+                        .Include(te => te.Values)
+                            .ThenInclude(ve => ve.FieldDefinition)
+                        .AsQueryable();
 
-             if (fromCreatedAtDate.HasValue)
-             {
-                 query = query.Where(te =>
-                     te.CreatedAt >= fromCreatedAtDate.Value);
-             }
+                    if (fromCreatedAtDate.HasValue)
+                    {
+                        query = query.Where(te => te.CreatedAt >= fromCreatedAtDate.Value);
+                    }
 
-             if (toCreatedAtDate.HasValue)
-             {
+                    if (toCreatedAtDate.HasValue)
+                    {
+                        query = query.Where(te => te.CreatedAt <= toCreatedAtDate.Value);
+                    }
 
-                 query = query.Where(te =>
-                     te.CreatedAt <= toCreatedAtDate.Value);
-             }
+                    query = query.OrderByDescending(te => te.CreatedAt);
 
-             query = query.OrderByDescending(te => te.CreatedAt);
+                    var trackerEntries = await query.ToListAsync();
 
-             var trackerEntries = await query.ToListAsync();
-
-             return trackerEntries.Select(te => new TrackerEntryResponse(
-                te.Id,
-                te.TrackerId,
-                te.Values.Select(ev => new EntryValueResponse(
-                    ev.Id,
-                    ev.FieldDefinitionId,
-                    ev.FieldDefinition.Label,
-                    ev.FieldDefinition.Type,
-                    ev.Value,
-                    ev.CreatedAt,
-                    ev.LastUpdated
-            )).ToList(),
-            te.CreatedAt,
-            te.LastUpdated
-        )).ToList();
-         }))!;
+                    return trackerEntries
+                        .Select(te => new TrackerEntryResponse(
+                            te.Id,
+                            te.TrackerId,
+                            te.Values.Select(ev => new EntryValueResponse(
+                                    ev.Id,
+                                    ev.FieldDefinitionId,
+                                    ev.FieldDefinition.Label,
+                                    ev.FieldDefinition.Description!,
+                                    ev.FieldDefinition.Type,
+                                    ev.Value,
+                                    ev.CreatedAt,
+                                    ev.LastUpdated
+                                ))
+                                .ToList(),
+                            te.CreatedAt,
+                            te.LastUpdated
+                        ))
+                        .ToList();
+                }
+            )
+        )!;
     }
 
-    public async Task UpdateTrackerEntryAsync(Guid trackerEntryId, Guid userId, TrackerEntryRequest request)
+    public async Task UpdateTrackerEntryAsync(
+        Guid trackerEntryId,
+        Guid userId,
+        TrackerEntryRequest request
+    )
     {
-        var existingTrackerEntry = await _ctx.TrackerEntries
-            .Include(t => t.Values)
+        var existingTrackerEntry = await _ctx
+            .TrackerEntries.Include(t => t.Values)
             .FirstOrDefaultAsync(t => t.Id == trackerEntryId && t.Tracker.UserId == userId);
 
         if (existingTrackerEntry == null)
         {
-            var existingUser = await _ctx.Users
-                .AsNoTracking()
+            var existingUser = await _ctx
+                .Users.AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == userId);
-            throw new KeyNotFoundException($"Tracker Entry'en med id'et '{trackerEntryId}' og brugeren '{existingUser?.Username}' blev ikke fundet");
+            throw new KeyNotFoundException(
+                $"Tracker Entry'en med id'et '{trackerEntryId}' og brugeren '{existingUser?.Username}' blev ikke fundet"
+            );
         }
 
         bool isModified = false;
 
         foreach (var ev in request.Values)
         {
-            var existingValue = existingTrackerEntry.Values
-                .FirstOrDefault(v => v.FieldDefinitionId == ev.FieldDefinitionId);
+            var existingValue = existingTrackerEntry.Values.FirstOrDefault(v =>
+                v.FieldDefinitionId == ev.FieldDefinitionId
+            );
 
             if (existingValue != null)
             {
@@ -186,11 +225,9 @@ public class TrackerEntryService : ITrackerEntryService
             }
             else
             {
-                existingTrackerEntry.Values.Add(new EntryValue
-                {
-                    Value = ev.Value,
-                    FieldDefinitionId = ev.FieldDefinitionId,
-                });
+                existingTrackerEntry.Values.Add(
+                    new EntryValue { Value = ev.Value, FieldDefinitionId = ev.FieldDefinitionId }
+                );
                 isModified = true;
             }
         }
@@ -207,5 +244,4 @@ public class TrackerEntryService : ITrackerEntryService
         string userCacheKey = $"{UserCachePrefix}{userId}";
         _cache.Remove(userCacheKey);
     }
-
 }

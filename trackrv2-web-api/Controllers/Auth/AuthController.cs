@@ -21,8 +21,7 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<ActionResult<LoginResponse>> Login(
-        [FromBody] LoginRequest request)
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
         var result = await _loginService.Login(request);
         SetRefreshTokenCookie(result!.Value.Response.RefreshToken);
@@ -44,7 +43,7 @@ public class AuthController : ControllerBase
             Secure = true,
             SameSite = SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddDays(-1), // Set to yesterday
-            Path = "/"
+            Path = "/",
         };
 
         Response.Cookies.Append("X-Refresh-Token", "", cookieOptions);
@@ -73,10 +72,13 @@ public class AuthController : ControllerBase
 
         return Ok(new { username = result.Value.Response.Username });
     }
+
     [HttpPost("switch-role")]
     public async Task<IActionResult> SwitchRoleAsync([FromBody] SwitchRoleRequest request)
     {
-        var userIdStr = User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        var userIdStr = User.FindFirst(
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+        )?.Value;
         var userId = Guid.Parse(userIdStr!);
         var result = await _jwtService.SwitchRole(userId, request);
 
@@ -87,7 +89,13 @@ public class AuthController : ControllerBase
         SetRefreshTokenCookie(result.Value.Response.RefreshToken);
         Response.Headers.Append("Authorization", $"Bearer {result!.Value.Token}");
         Response.Headers.Append("Access-Control-Expose-Headers", "Authorization");
-        return Ok(new { username = result.Value.Response.Username, activeRole = result.Value.Response.ActiveRole });
+        return Ok(
+            new
+            {
+                username = result.Value.Response.Username,
+                activeRole = result.Value.Response.ActiveRole,
+            }
+        );
     }
 
     private void SetRefreshTokenCookie(string refreshToken)
@@ -98,7 +106,7 @@ public class AuthController : ControllerBase
             Secure = true, // TODO: Set to true when in production
             SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(7),
-            Path = "/"
+            Path = "/",
         };
 
         Response.Cookies.Append("X-Refresh-Token", refreshToken, cookieOptions);

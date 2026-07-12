@@ -1,11 +1,11 @@
-namespace trackrv2_shared.DTOs.User;
+namespace trackrv2_shared.DTOs;
 
-public record UserInfoUpdateRequest(
+public record UserFollowingResponse(
+    Guid Id,
     string Username,
     string FirstName,
     string? MiddleName,
     string LastName,
     string? Nationality,
-    string Email,
-    long PhoneNumber
+    DateTime? FollowingAt
 );

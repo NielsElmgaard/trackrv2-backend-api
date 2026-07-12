@@ -3,6 +3,7 @@
 public class Tracker : BaseEntity
 {
     public required string Name { get; set; }
+    public string? Description { get; set; }
     public List<FieldDefinition> Fields { get; set; } = new();
     public List<TrackerEntry> Entries { get; set; } = new();
 

@@ -8,31 +8,34 @@ namespace trackrv2_efc.Middleware;
 
 public sealed class GlobalExceptionHandler(
     IProblemDetailsService problemDetailsService,
-    ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+    ILogger<GlobalExceptionHandler> logger
+) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var statusCode = exception switch
         {
             KeyNotFoundException => StatusCodes.Status404NotFound,
-            BadHttpRequestException or InvalidOperationException => StatusCodes
-                .Status400BadRequest,
-            UnauthorizedAccessException or SecurityTokenException => StatusCodes
-                .Status401Unauthorized,
-            _ => StatusCodes.Status500InternalServerError
+            BadHttpRequestException or InvalidOperationException => StatusCodes.Status400BadRequest,
+            UnauthorizedAccessException or SecurityTokenException =>
+                StatusCodes.Status401Unauthorized,
+            _ => StatusCodes.Status500InternalServerError,
         };
 
         httpContext.Response.StatusCode = statusCode;
 
         if (statusCode >= 500)
         {
-            logger.LogError(exception,
+            logger.LogError(
+                exception,
                 "En kritisk fejl opstod på {Path} {Method}",
                 httpContext.Request.Path,
-                httpContext.Request.Method);
+                httpContext.Request.Method
+            );
         }
         else
         {
@@ -41,7 +44,8 @@ public sealed class GlobalExceptionHandler(
                 "Request fejlede med {StatusCode}: {Message} på {Path}",
                 statusCode,
                 exception.Message,
-                httpContext.Request.Path);
+                httpContext.Request.Path
+            );
         }
 
         return await problemDetailsService.TryWriteAsync(
@@ -54,21 +58,21 @@ public sealed class GlobalExceptionHandler(
                     Type = exception.GetType().Name,
                     Title = statusCode switch
                     {
-                        StatusCodes.Status404NotFound =>
-                            "Ressourcen blev ikke fundet",
+                        StatusCodes.Status404NotFound => "Ressourcen blev ikke fundet",
                         StatusCodes.Status401Unauthorized => "Ikke autoriseret",
                         StatusCodes.Status400BadRequest => "Ugyldig anmodning",
-                         StatusCodes.Status429TooManyRequests=> "For mange anmodninger på samme tid. Prøv igen senere.",
-                        _ => "En uventet fejl opstod"
-                       
+                        StatusCodes.Status429TooManyRequests =>
+                            "For mange anmodninger på samme tid. Prøv igen senere.",
+                        _ => "En uventet fejl opstod",
                     },
                     Status = statusCode,
-                    Detail = statusCode ==
-                             StatusCodes.Status500InternalServerError
-                        ? "Kontakt venligst support, hvis problemet fortsætter."
-                        : exception.Message,
-                    Instance = httpContext.Request.Path
-                }
-            });
+                    Detail =
+                        statusCode == StatusCodes.Status500InternalServerError
+                            ? "Kontakt venligst support, hvis problemet fortsætter."
+                            : exception.Message,
+                    Instance = httpContext.Request.Path,
+                },
+            }
+        );
     }
 }
