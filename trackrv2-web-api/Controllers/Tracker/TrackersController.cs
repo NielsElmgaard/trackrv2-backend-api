@@ -72,6 +72,7 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<TrackerOverviewResponse>> GetTrackersByUserAsync(
         [FromQuery] string? name,
+        [FromQuery] bool? isPublic,
         [FromQuery] DateTime? createdAt,
         [FromQuery] DateTime? lastUpdated
     )
@@ -84,10 +85,20 @@ public class TrackersController(ITrackerService trackerService) : ControllerBase
         var result = await trackerService.GetTrackersByUserAsync(
             userId,
             name,
+            isPublic,
             createdAt,
             lastUpdated
         );
 
+        return Ok(result);
+    }
+
+    [HttpGet("public/{userId:Guid}")]
+    public async Task<ActionResult<TrackerDetailedResponse>> GetPublicTrackersForUser(
+        [FromRoute] Guid userId
+    )
+    {
+        var result = await trackerService.GetPublicTrackersForUserAsync(userId);
         return Ok(result);
     }
 }

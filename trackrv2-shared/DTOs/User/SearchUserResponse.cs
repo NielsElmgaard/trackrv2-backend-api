@@ -6,5 +6,6 @@ public record SearchUserResponse(
     string FirstName,
     string MiddleName,
     string LastName,
-    string? Nationality
+    string? Nationality,
+    DateTime CreatedAt
 );

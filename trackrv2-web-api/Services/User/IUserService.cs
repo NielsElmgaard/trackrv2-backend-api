@@ -23,6 +23,8 @@ public interface IUserService
         string? nationality
     );
 
+    Task<SearchUserResponse> GetSingleSearchUserByIdAsync(Guid searchUserId);
+
     // Admin role required
     Task<UserProfileResponse> GetUserByIdAsync(Guid id);
 

@@ -189,7 +189,8 @@ public class UserService : IUserService
                     user.FirstName,
                     user.MiddleName!,
                     user.LastName,
-                    user.Nationality
+                    user.Nationality,
+                    user.CreatedAt
                 );
             })
             .ToList();
@@ -281,6 +282,7 @@ public class UserService : IUserService
                             t.Id,
                             t.Name,
                             t.Description!,
+                            t.IsPublic,
                             t.CreatedAt,
                             t.LastUpdated
                         ))
@@ -326,7 +328,7 @@ public class UserService : IUserService
 
         if (user == null)
         {
-            throw new KeyNotFoundException($"Kunden kunne ikke findes.");
+            throw new KeyNotFoundException($"Brugeren kunne ikke findes.");
         }
 
         // var fullName = $"{user.FirstName} {user.MiddleName}{(user.MiddleName != null ? " " : "")}{user.LastName}";
@@ -347,6 +349,7 @@ public class UserService : IUserService
                 t.Id,
                 t.Name,
                 t.Description!,
+                t.IsPublic,
                 t.CreatedAt,
                 t.LastUpdated
             ))
@@ -400,6 +403,28 @@ public class UserService : IUserService
                 );
             })
             .ToList();
+    }
+
+    public async Task<SearchUserResponse> GetSingleSearchUserByIdAsync(Guid searchUserId)
+    {
+        trackrv2_efc.Entities.User? user = null;
+
+        user = await _ctx.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == searchUserId);
+
+        if (user == null)
+        {
+            throw new KeyNotFoundException($"Brugeren kunne ikke findes.");
+        }
+
+        return new SearchUserResponse(
+            user.Id,
+            user.Username,
+            user.FirstName,
+            user.MiddleName!,
+            user.LastName,
+            user.Nationality,
+            user.CreatedAt
+        );
     }
 
     // Filter helper method

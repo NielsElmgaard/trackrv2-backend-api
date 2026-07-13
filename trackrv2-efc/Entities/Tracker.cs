@@ -9,4 +9,5 @@ public class Tracker : BaseEntity
 
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
+    public bool IsPublic { get; set; } = false;
 }

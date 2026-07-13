@@ -4,6 +4,7 @@ public record TrackerDetailedResponse(
     Guid Id,
     string Name,
     string Description,
+    bool IsPublic,
     Guid UserId,
     DateTime CreatedAt,
     DateTime LastUpdated,

@@ -39,6 +39,7 @@ public class TrackerService : ITrackerService
         {
             Name = request.Name,
             Description = request.Description,
+            IsPublic = request.IsPublic,
             UserId = userId,
             Fields = request
                 .Fields.Select(f => new FieldDefinition { Label = f.Label, Type = f.Type })
@@ -55,6 +56,7 @@ public class TrackerService : ITrackerService
             addedTrackerEntity.Id,
             addedTrackerEntity.Name,
             addedTrackerEntity.Description!,
+            addedTrackerEntity.IsPublic,
             addedTrackerEntity.UserId,
             addedTrackerEntity.CreatedAt,
             addedTrackerEntity.LastUpdated,
@@ -118,6 +120,7 @@ public class TrackerService : ITrackerService
                         tracker.Id,
                         tracker.Name,
                         tracker.Description!,
+                        tracker.IsPublic,
                         tracker.UserId,
                         tracker.CreatedAt,
                         tracker.LastUpdated,
@@ -162,6 +165,7 @@ public class TrackerService : ITrackerService
         }
 
         existingTrackerForUser.Description = request.Description;
+        existingTrackerForUser.IsPublic = request.IsPublic;
 
         // All existing fields
         var requestFieldIds = request
@@ -231,6 +235,7 @@ public class TrackerService : ITrackerService
     public async Task<List<TrackerOverviewResponse>> GetTrackersByUserAsync(
         Guid userId,
         string? name,
+        bool? isPublic,
         DateTime? createdAt,
         DateTime? lastUpdated
     )
@@ -240,7 +245,7 @@ public class TrackerService : ITrackerService
         {
             throw new KeyNotFoundException($"brugeren med id'et '{userId}' blev ikke fundet");
         }
-        var trackers = await GetManyTrackers(userId, name, createdAt, lastUpdated);
+        var trackers = await GetManyTrackers(userId, name, isPublic, createdAt, lastUpdated);
 
         return trackers
             .Select(tracker =>
@@ -249,8 +254,44 @@ public class TrackerService : ITrackerService
                     tracker.Id,
                     tracker.Name,
                     tracker.Description!,
+                    tracker.IsPublic,
                     tracker.CreatedAt,
                     tracker.LastUpdated
+                );
+            })
+            .ToList();
+    }
+
+    public async Task<List<TrackerDetailedResponse>> GetPublicTrackersForUserAsync(Guid userId)
+    {
+        var userExists = await _ctx.Users.AnyAsync(u => u.Id == userId);
+        if (!userExists)
+        {
+            throw new KeyNotFoundException($"brugeren med id'et '{userId}' blev ikke fundet");
+        }
+        var trackers = await GetManyTrackers(userId, null, true, null, null);
+
+        return trackers
+            .Select(tracker =>
+            {
+                return new TrackerDetailedResponse(
+                    tracker.Id,
+                    tracker.Name,
+                    tracker.Description!,
+                    tracker.IsPublic,
+                    tracker.UserId,
+                    tracker.CreatedAt,
+                    tracker.LastUpdated,
+                    tracker
+                        .Fields.Select(f => new FieldDefinitionResponse(
+                            f.Id,
+                            f.Label,
+                            f.Description!,
+                            f.Type,
+                            f.CreatedAt,
+                            f.LastUpdated
+                        ))
+                        .ToList()
                 );
             })
             .ToList();
@@ -259,6 +300,7 @@ public class TrackerService : ITrackerService
     private async Task<List<Tracker>> GetManyTrackers(
         Guid userId,
         string? name,
+        bool? isPublic,
         DateTime? createdAt,
         DateTime? lastUpdated
     )
@@ -268,6 +310,11 @@ public class TrackerService : ITrackerService
         if (!string.IsNullOrWhiteSpace(name))
         {
             query = query.Where(t => EF.Functions.ILike(t.Name, name));
+        }
+
+        if (isPublic.HasValue)
+        {
+            query = query.Where(t => t.IsPublic == isPublic);
         }
 
         if (createdAt.HasValue)

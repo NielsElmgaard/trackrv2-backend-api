@@ -12,7 +12,10 @@ public interface ITrackerService
     Task<List<TrackerOverviewResponse>> GetTrackersByUserAsync(
         Guid userId,
         string? name,
+        bool? isPublic,
         DateTime? createdAt,
         DateTime? lastUpdated
     );
+
+    Task<List<TrackerDetailedResponse>> GetPublicTrackersForUserAsync(Guid userId);
 }
