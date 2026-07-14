@@ -76,4 +76,22 @@ public class TrackerEntriesController(ITrackerEntryService trackerEntryService) 
 
         return NoContent();
     }
+
+    [HttpGet("public/{trackerId:Guid}/{userId:Guid}", Name = "GetTrackerEntriesForPublicTracker")]
+    public async Task<ActionResult<TrackerDetailedResponse>> GetTrackerEntriesForPublicTrackerAsync(
+        [FromRoute] Guid trackerId,
+        [FromRoute] Guid userId,
+        [FromQuery] DateTime? fromCreatedAtDate,
+        [FromQuery] DateTime? toCreatedAtDate
+    )
+    {
+        var result = await trackerEntryService.GetTrackerEntriesForTrackerAsync(
+            trackerId,
+            userId,
+            fromCreatedAtDate,
+            toCreatedAtDate
+        );
+
+        return Ok(result);
+    }
 }
